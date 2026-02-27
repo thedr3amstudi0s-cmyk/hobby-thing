@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HobbySnap</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{height:100%}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px}
+:root{
+  --bg:#0a0a0f;--surface:#13131a;--surface2:#1c1c27;
+  --border:rgba(255,255,255,0.07);--text:#f0f0f0;--muted:rgba(255,255,255,0.35);
+  --accent:#FF6B6B;--accent2:#FF8C42;--green:#22c55e;
+  --sidebar:240px;--right:300px;
+}
+body{background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text);min-height:100vh}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
+.hidden{display:none!important}
+
+/* ══════════════════════════════════════
+   DESKTOP LAYOUT
+══════════════════════════════════════ */
+#layout{display:flex;min-height:100vh;max-width:1280px;margin:0 auto}
+
+/* LEFT SIDEBAR */
+#sidebar{
+  width:var(--sidebar);flex-shrink:0;
+  position:sticky;top:0;height:100vh;
+  display:flex;flex-direction:column;
+  padding:24px 12px;
+  border-right:1px solid var(--border);
+  overflow-y:auto;
+}
+.sidebar-logo{font-family:'Playfair Display',serif;font-style:italic;font-weight:700;font-size:26px;background:linear-gradient(135deg,#FF6B6B,#FF8C42);-webkit-background-clip:text;-webkit-text-fill-color:transparent;padding:0 10px 28px}
+.nav-item{display:flex;align-items:center;gap:14px;padding:11px 14px;border-radius:14px;cursor:pointer;font-size:15px;font-weight:500;color:var(--muted);transition:all .2s;border:none;background:none;width:100%;font-family:inherit;position:relative}
+.nav-item:hover{background:rgba(255,255,255,0.06);color:var(--text)}
+.nav-item.active{background:rgba(255,107,107,0.12);color:var(--accent);font-weight:600}
+.nav-item .ni-icon{font-size:20px;width:24px;text-align:center;flex-shrink:0}
+.nav-item .ni-label{flex:1;text-align:left}
+.nav-item .ni-badge{background:var(--accent);color:#fff;font-size:10px;font-weight:700;border-radius:10px;padding:2px 7px;margin-left:auto}
+.sidebar-divider{height:1px;background:var(--border);margin:12px 10px}
+.sidebar-post-btn{margin:8px 10px 0;padding:13px;border-radius:14px;border:none;background:linear-gradient(135deg,#FF6B6B,#FF8C42);color:#fff;font-weight:700;font-size:15px;cursor:pointer;font-family:inherit;width:calc(100% - 20px);box-shadow:0 4px 15px rgba(255,107,107,0.35);transition:transform .2s,box-shadow .2s}
+.sidebar-post-btn:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(255,107,107,0.45)}
+.sidebar-spacer{flex:1}
+.sidebar-user{display:flex;align-items:center;gap:10px;padding:12px 10px;border-radius:14px;cursor:pointer;transition:background .2s}
+.sidebar-user:hover{background:rgba(255,255,255,0.06)}
+.sidebar-user img{width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid var(--accent)}
+.sidebar-user-name{font-weight:600;font-size:14px}
+.sidebar-user-sub{font-size:12px;color:var(--muted)}
+
+/* CENTER FEED */
+#center{flex:1;min-width:0;border-right:1px solid var(--border)}
+.center-header{padding:16px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(10,10,15,0.96);backdrop-filter:blur(14px);z-index:50;display:flex;align-items:center;gap:12px}
+.center-title{font-weight:700;font-size:18px;flex:1}
+.center-search{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:var(--text);outline:none;border-radius:22px;padding:8px 14px 8px 36px;font-size:13px;font-family:inherit;transition:border-color .2s;width:200px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='rgba(255,255,255,0.28)' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:10px center;background-size:14px}
+.center-search::placeholder{color:var(--muted)}
+.center-search:focus{border-color:rgba(255,107,107,0.5);width:260px}
+.center-search-transition{transition:width .25s}
+
+/* Hobby chips strip */
+.chips-bar{display:flex;gap:7px;padding:12px 20px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--border)}
+.chips-bar::-webkit-scrollbar{display:none}
+.chip{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:500;white-space:nowrap;cursor:pointer;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.05);color:#fff;font-family:inherit;transition:all .18s}
+.chip:hover{transform:scale(1.05)}
+.chip.all.active{background:linear-gradient(135deg,#FF6B6B,#FF8C42);border-color:transparent}
+
+/* SCREENS */
+.screen{display:none;animation:fadeIn .2s ease}
+.screen.active{display:block}
+
+/* PHOTO GRID */
+.grid-wrap{padding:4px}
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+.grid-cell{position:relative;aspect-ratio:1/1;overflow:hidden;cursor:pointer;border-radius:4px;background:#1c1c27}
+.grid-cell img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s ease}
+.grid-cell:hover img{transform:scale(1.07)}
+.grid-overlay{position:absolute;inset:0;background:rgba(0,0,0,0);display:flex;align-items:center;justify-content:center;gap:18px;transition:background .2s}
+.grid-cell:hover .grid-overlay{background:rgba(0,0,0,0.5)}
+.grid-stat{display:flex;align-items:center;gap:4px;color:#fff;font-size:14px;font-weight:700;opacity:0;transform:translateY(4px);transition:opacity .18s,transform .18s}
+.grid-cell:hover .grid-stat{opacity:1;transform:translateY(0)}
+.grid-dot{position:absolute;top:7px;right:7px;width:9px;height:9px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.6)}
+.grid-ad{grid-column:span 2;aspect-ratio:2/1;border-radius:4px;overflow:hidden}
+.grid-ad .ad-box{height:100%;border-radius:4px}
+.empty-state{text-align:center;padding:80px 20px;color:var(--muted)}
+.empty-state .big{font-size:52px;margin-bottom:14px}
+
+/* RIGHT SIDEBAR */
+#right{width:var(--right);flex-shrink:0;padding:20px 16px;position:sticky;top:0;height:100vh;overflow-y:auto}
+.right-ad{margin-bottom:20px}
+.widget{background:var(--surface);border-radius:16px;padding:16px;margin-bottom:16px;border:1px solid var(--border)}
+.widget-title{font-size:13px;font-weight:700;margin-bottom:14px;color:var(--text)}
+.suggested-user{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.suggested-user:last-child{margin-bottom:0}
+.sug-ava{width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.sug-name{font-size:13px;font-weight:600;flex:1}
+.sug-tags{font-size:11px;color:var(--muted)}
+.follow-btn{padding:5px 14px;border-radius:20px;border:none;background:linear-gradient(135deg,#FF6B6B,#FF8C42);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:transform .15s,opacity .15s;flex-shrink:0}
+.follow-btn:hover{transform:scale(1.05)}
+.follow-btn.following{background:rgba(255,255,255,0.08);color:var(--muted);border:1px solid rgba(255,255,255,0.12)}
+.trending-tag{display:flex;align-items:center;gap:8px;padding:8px 0;cursor:pointer;border-bottom:1px solid var(--border);transition:opacity .15s}
+.trending-tag:last-child{border-bottom:none}
+.trending-tag:hover{opacity:.75}
+.tt-rank{font-size:11px;color:var(--muted);width:18px;text-align:center}
+.tt-name{font-size:13px;font-weight:600;flex:1}
+.tt-count{font-size:11px;color:var(--muted)}
+
+/* AD BOX */
+.ad-box{background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px dashed rgba(255,255,255,0.12);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;width:100%}
+.ad-box span{display:block;text-align:center}
+.ad-lbl{font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.22);text-transform:uppercase}
+.ad-dim{font-size:11px;color:rgba(255,255,255,0.11);font-family:monospace}
+.ad-code{font-size:9px;color:rgba(255,255,255,0.07)}
+.ad-banner{height:90px}.ad-leader{height:70px}.ad-rect{height:260px}.ad-sq{height:200px}
+
+/* ── EXPLORE ── */
+.explore-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:20px}
+.etag-card{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:14px;cursor:pointer;transition:transform .2s,box-shadow .2s;border:1px solid transparent}
+.etag-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.3)}
+.etag-icon{font-size:24px;flex-shrink:0}
+.etag-name{font-size:14px;font-weight:700}
+.etag-count{font-size:12px;opacity:.65}
+.sec-title{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;padding:20px 20px 10px}
+.trend-grid-2{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;padding:0 4px 20px}
+.trend-cell{position:relative;aspect-ratio:1/1;overflow:hidden;cursor:pointer;border-radius:4px}
+.trend-cell img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+.trend-cell:hover img{transform:scale(1.07)}
+.trend-lbl{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.75));padding:20px 8px 8px;font-size:12px;font-weight:600;color:#fff}
+
+/* ── HOBBIES ── */
+.hobby-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:20px}
+.hcard{border-radius:16px;padding:20px 18px;cursor:pointer;transition:transform .2s,box-shadow .2s;position:relative;overflow:hidden;border:1px solid transparent}
+.hcard:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,0.4)}
+.hcard-icon{font-size:30px;margin-bottom:10px}
+.hcard-name{font-size:15px;font-weight:700;margin-bottom:3px}
+.hcard-count{font-size:12px;opacity:.65}
+.hcard::after{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,0.07)}
+
+/* ── MESSAGES ── */
+#msgLayout{display:flex;height:calc(100vh - 57px)}
+.msg-sidebar{width:280px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column}
+.msg-sidebar-top{padding:16px;border-bottom:1px solid var(--border)}
+.msg-sidebar-title{font-size:16px;font-weight:700;margin-bottom:12px}
+.msg-search{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:var(--text);outline:none;border-radius:10px;padding:8px 12px;width:100%;font-size:13px;font-family:inherit}
+.msg-search::placeholder{color:var(--muted)}
+.msg-req-row{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;background:rgba(255,107,107,0.07);border-bottom:1px solid var(--border);transition:background .2s}
+.msg-req-row:hover{background:rgba(255,107,107,0.13)}
+.msg-list{overflow-y:auto;flex:1}
+.msg-row{display:flex;align-items:center;gap:11px;padding:13px 16px;cursor:pointer;transition:background .15s;border-bottom:1px solid var(--border)}
+.msg-row:hover,.msg-row.active{background:rgba(255,255,255,0.05)}
+.msg-row.active{background:rgba(255,107,107,0.08)}
+.msg-ava{position:relative;flex-shrink:0}
+.msg-ava img{width:42px;height:42px;border-radius:50%;object-fit:cover}
+.online-dot{position:absolute;bottom:1px;right:1px;width:11px;height:11px;border-radius:50%;background:var(--green);border:2px solid var(--bg)}
+.msg-name{font-weight:600;font-size:14px;margin-bottom:2px}
+.msg-preview{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px}
+.msg-meta{margin-left:auto;text-align:right}
+.msg-time{font-size:11px;color:var(--muted);margin-bottom:4px}
+.msg-badge{background:var(--accent);color:#fff;font-size:10px;font-weight:700;border-radius:10px;padding:2px 7px}
+/* Chat pane */
+.chat-pane{flex:1;display:flex;flex-direction:column;min-width:0}
+.chat-pane-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);gap:12px}
+.chat-pane-empty .big{font-size:52px}
+.chat-hdr{padding:14px 18px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0}
+.chat-ava{width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid var(--accent)}
+.chat-name{font-weight:600;font-size:15px}
+.chat-status{font-size:12px;color:var(--green)}
+.chat-hdr-actions{margin-left:auto;display:flex;gap:8px}
+.chat-action-btn{background:rgba(255,255,255,0.07);border:none;border-radius:50%;width:34px;height:34px;color:var(--text);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s}
+.chat-action-btn:hover{background:rgba(255,255,255,0.14)}
+.chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.chat-warning{background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.2);border-radius:10px;padding:10px 14px;font-size:12px;color:rgba(255,200,150,1);text-align:center;line-height:1.5}
+.msg-bubble-wrap{display:flex;gap:8px;align-items:flex-end;max-width:70%}
+.msg-bubble-wrap.mine{align-self:flex-end;flex-direction:row-reverse}
+.bubble-ava{width:26px;height:26px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.bubble{padding:10px 14px;border-radius:18px;font-size:14px;line-height:1.5;word-break:break-word}
+.bubble.theirs{background:var(--surface2);border-bottom-left-radius:4px}
+.bubble.mine{background:linear-gradient(135deg,#FF6B6B,#FF8C42);color:#fff;border-bottom-right-radius:4px}
+.bubble-time{font-size:10px;color:var(--muted);padding:0 4px;flex-shrink:0}
+.chat-input-row{padding:14px 18px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:center;background:var(--surface);flex-shrink:0}
+.chat-input{flex:1;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);color:var(--text);outline:none;border-radius:22px;padding:10px 16px;font-size:14px;font-family:inherit;transition:border-color .2s}
+.chat-input:focus{border-color:rgba(255,107,107,0.5)}
+.chat-send{background:linear-gradient(135deg,#FF6B6B,#FF8C42);border:none;border-radius:50%;width:40px;height:40px;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .15s;box-shadow:0 3px 10px rgba(255,107,107,0.35)}
+.chat-send:hover{transform:scale(1.1)}
+.chat-attach{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:0;transition:color .2s}
+.chat-attach:hover{color:var(--text)}
+
+/* ── NOTIFICATIONS ── */
+.notif-item{display:flex;align-items:flex-start;gap:12px;padding:16px 20px;cursor:pointer;transition:background .15s;border-bottom:1px solid var(--border)}
+.notif-item:hover{background:rgba(255,255,255,0.04)}
+.notif-item.unread{background:rgba(255,107,107,0.05)}
+.notif-ava-wrap{position:relative;flex-shrink:0}
+.notif-ava{width:44px;height:44px;border-radius:50%;object-fit:cover}
+.notif-icon-badge{position:absolute;bottom:-2px;right:-2px;font-size:15px}
+.notif-text{font-size:14px;line-height:1.5;flex:1}
+.notif-text strong{font-weight:600}
+.notif-time{font-size:12px;color:var(--muted);margin-top:3px}
+.notif-thumb{width:44px;height:44px;border-radius:8px;object-fit:cover;flex-shrink:0}
+
+/* ── PROFILE ── */
+.profile-cover{height:180px;background:linear-gradient(135deg,rgba(255,107,107,0.3),rgba(255,140,66,0.2),rgba(100,100,200,0.2));position:relative}
+.profile-cover-inner{height:100%;background-size:cover;background-position:center}
+.profile-info{padding:0 24px 0}
+.profile-pic-wrap{margin-top:-44px;margin-bottom:12px}
+.profile-pic{width:88px;height:88px;border-radius:50%;object-fit:cover;border:4px solid var(--bg);cursor:pointer}
+.profile-top-row{display:flex;align-items:flex-end;gap:12px;margin-bottom:4px}
+.profile-name{font-weight:700;font-size:20px;flex:1}
+.profile-handle{font-size:14px;color:var(--muted);margin-bottom:6px}
+.profile-bio{font-size:14px;color:rgba(255,255,255,0.7);line-height:1.55;margin-bottom:12px}
+.profile-stats-row{display:flex;gap:28px;margin-bottom:16px}
+.pstat{cursor:pointer}
+.pstat:hover .pnum{color:var(--accent)}
+.pnum{font-size:18px;font-weight:700;display:block;transition:color .2s}
+.plbl{font-size:12px;color:var(--muted)}
+.profile-hobby-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.ptag{padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600;color:#fff}
+.profile-action-btns{display:flex;gap:8px;margin-bottom:20px}
+.prof-btn{padding:9px 20px;border-radius:12px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.07);color:var(--text);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:background .2s}
+.prof-btn:hover{background:rgba(255,255,255,0.12)}
+.prof-btn.primary{background:linear-gradient(135deg,#FF6B6B,#FF8C42);border-color:transparent;color:#fff;box-shadow:0 3px 12px rgba(255,107,107,0.3)}
+.profile-divider{height:1px;background:var(--border);margin:0 0 4px}
+
+/* ── SETTINGS ── */
+.settings-wrap{max-width:640px;padding:24px}
+.settings-section-title{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin:20px 0 10px}
+.setting-row{display:flex;align-items:center;gap:14px;padding:14px 16px;cursor:pointer;transition:background .15s;border-radius:12px}
+.setting-row:hover{background:rgba(255,255,255,0.05)}
+.setting-icon{font-size:20px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.07);border-radius:10px;flex-shrink:0}
+.setting-label{font-size:14px;font-weight:500;flex:1}
+.setting-sub{font-size:12px;color:var(--muted);margin-top:1px}
+.setting-chevron{color:var(--muted);font-size:18px}
+.toggle{width:44px;height:24px;background:var(--surface2);border-radius:12px;position:relative;cursor:pointer;transition:background .25s;flex-shrink:0;border:none}
+.toggle.on{background:var(--accent)}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .25s}
+.toggle.on::after{left:23px}
+.setting-divider{height:1px;background:var(--border);margin:8px 0}
+.danger-btn{padding:12px 20px;border-radius:12px;border:1px solid rgba(239,68,68,0.3);background:rgba(239,68,68,0.08);color:#ef4444;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;margin-right:10px}
+.danger-btn:hover{background:rgba(239,68,68,0.16)}
+
+/* ── LIGHTBOX ── */
+#lightbox{position:fixed;inset:0;background:rgba(0,0,0,0);z-index:300;display:flex;align-items:center;justify-content:center;pointer-events:none;transition:background .25s}
+#lightbox.open{background:rgba(0,0,0,0.88);pointer-events:all;backdrop-filter:blur(8px)}
+.lb-wrap{display:flex;width:90%;max-width:900px;height:90vh;border-radius:20px;overflow:hidden;transform:scale(0.88) translateY(20px);opacity:0;transition:transform .3s cubic-bezier(.34,1.5,.64,1),opacity .22s;background:var(--surface);border:1px solid rgba(255,255,255,0.09)}
+#lightbox.open .lb-wrap{transform:scale(1) translateY(0);opacity:1}
+.lb-img-pane{flex:1;overflow:hidden;background:#000;display:flex;align-items:center;justify-content:center;min-width:0}
+.lb-img-pane img{width:100%;height:100%;object-fit:contain}
+.lb-detail{width:320px;flex-shrink:0;display:flex;flex-direction:column;border-left:1px solid var(--border)}
+.lb-hdr{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0}
+.lb-ava{border-radius:50%;width:36px;height:36px;object-fit:cover;border:2px solid var(--accent)}
+.lb-user{font-weight:600;font-size:14px}
+.lb-time{font-size:12px;color:var(--muted)}
+.lb-x{margin-left:auto;background:rgba(255,255,255,0.08);border:none;border-radius:50%;width:30px;height:30px;color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;flex-shrink:0}
+.lb-x:hover{background:rgba(255,255,255,0.18)}
+.lb-scroll{flex:1;overflow-y:auto;scrollbar-width:thin}
+.lb-tags{display:flex;flex-wrap:wrap;gap:6px;padding:12px 16px 4px}
+.lb-tag{padding:4px 11px;border-radius:12px;font-size:11px;font-weight:600;color:#fff;cursor:pointer;transition:transform .15s}
+.lb-tag:hover{transform:scale(1.07)}
+.lb-actions{padding:10px 16px 4px;display:flex;gap:14px;align-items:center}
+.lb-btn{background:none;border:none;cursor:pointer;font-size:22px;line-height:1;transition:transform .15s;padding:0}
+.lb-btn:active{transform:scale(1.35)}
+.lb-likes{padding:2px 16px 6px;font-size:13px;font-weight:600}
+.lb-caption{padding:0 16px 6px;font-size:13px;line-height:1.65}
+.lb-caption strong{font-weight:600;margin-right:5px}
+.lb-viewcmt{font-size:12px;color:var(--muted);padding:0 16px 10px;cursor:pointer}
+.lb-viewcmt:hover{color:var(--text)}
+.lb-comments-section{padding:0 16px 8px}
+.lb-comment{display:flex;gap:10px;margin-bottom:12px;align-items:flex-start}
+.lb-cmt-ava{width:26px;height:26px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.lb-cmt-body{background:var(--surface2);border-radius:10px;padding:8px 10px;font-size:12px;line-height:1.5;flex:1}
+.lb-cmt-user{font-weight:600;margin-right:5px}
+.lb-add-comment{display:flex;gap:8px;padding:0 16px 10px;align-items:center;flex-shrink:0}
+.lb-cmt-input{flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:var(--text);outline:none;border-radius:20px;padding:8px 14px;font-size:12px;font-family:inherit;transition:border-color .2s}
+.lb-cmt-input:focus{border-color:rgba(255,107,107,0.5)}
+.lb-cmt-send{background:var(--accent);border:none;border-radius:50%;width:30px;height:30px;color:#fff;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .15s}
+.lb-cmt-send:hover{transform:scale(1.1)}
+.lb-menu-row{display:flex;gap:6px;padding:4px 16px 14px;flex-wrap:wrap;flex-shrink:0;border-top:1px solid var(--border)}
+.lb-menu-btn{padding:6px 12px;border-radius:18px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);color:var(--text);font-size:12px;cursor:pointer;font-family:inherit;transition:all .2s}
+.lb-menu-btn:hover{background:rgba(255,255,255,0.1)}
+.lb-menu-btn.danger{border-color:rgba(239,68,68,0.3);color:#ef4444}
+.lb-menu-btn.danger:hover{background:rgba(239,68,68,0.1)}
+
+/* ── MODALS ── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0);z-index:400;display:flex;align-items:center;justify-content:center;pointer-events:none;transition:background .25s}
+.modal-bg.open{background:rgba(0,0,0,0.75);pointer-events:all;backdrop-filter:blur(6px)}
+.modal{background:var(--surface);border-radius:20px;padding:28px;width:90%;max-width:480px;border:1px solid rgba(255,255,255,0.1);transform:scale(0.9) translateY(20px);opacity:0;transition:transform .3s cubic-bezier(.34,1.5,.64,1),opacity .22s;max-height:88vh;overflow-y:auto;scrollbar-width:thin}
+.modal-bg.open .modal{transform:scale(1) translateY(0);opacity:1}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.modal-title{font-weight:700;font-size:18px}
+.modal-x{background:rgba(255,255,255,0.08);border:none;border-radius:50%;width:32px;height:32px;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s}
+.modal-x:hover{background:rgba(255,255,255,0.16)}
+.img-picker{width:100%;aspect-ratio:1/1;border-radius:14px;border:2px dashed rgba(255,107,107,0.3);background:rgba(255,107,107,0.04);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;margin-bottom:16px;transition:border-color .2s;max-height:300px}
+.img-picker:hover{border-color:rgba(255,107,107,0.55)}
+.img-picker img{width:100%;height:100%;object-fit:cover;display:block}
+.picker-hint{text-align:center;color:var(--muted);pointer-events:none}
+.picker-hint .big{font-size:36px;margin-bottom:8px}
+.picker-hint p{font-size:13px}
+textarea.cap{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:var(--text);outline:none;border-radius:11px;padding:11px 12px;width:100%;font-size:14px;font-family:inherit;resize:none;margin-bottom:16px;transition:border-color .2s}
+textarea.cap::placeholder{color:var(--muted)}
+textarea.cap:focus{border-color:rgba(255,107,107,0.45)}
+.tag-lbl{font-size:12px;color:var(--muted);margin-bottom:10px;font-weight:500}
+.tag-grid{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:20px}
+.tpick{padding:6px 13px;border-radius:16px;font-size:12px;cursor:pointer;font-weight:500;transition:all .15s;font-family:inherit}
+.btn-share{width:100%;padding:14px;border-radius:13px;border:none;background:linear-gradient(135deg,#FF6B6B,#FF8C42);color:#fff;font-weight:700;font-size:15px;cursor:pointer;font-family:inherit;box-shadow:0 5px 18px rgba(255,107,107,0.35);transition:transform .2s,box-shadow .2s}
+.btn-share:hover:not(:disabled){transform:translateY(-2px)}
+.btn-share:disabled{background:rgba(255,255,255,0.09);color:var(--muted);cursor:not-allowed;box-shadow:none}
+.report-option{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:opacity .15s}
+.report-option:last-child{border-bottom:none}
+.report-option:hover{opacity:.75}
+.report-icon{font-size:22px;width:36px;text-align:center;flex-shrink:0}
+.report-label{font-size:14px;font-weight:500}
+.report-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.action-sheet-btn{width:100%;padding:13px;border-radius:12px;border:none;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:10px;transition:all .2s}
+.action-sheet-btn.primary{background:linear-gradient(135deg,#FF6B6B,#FF8C42);color:#fff}
+.action-sheet-btn.danger{background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.2)}
+.action-sheet-btn.danger:hover{background:rgba(239,68,68,0.18)}
+.action-sheet-btn.ghost{background:rgba(255,255,255,0.07);color:var(--text)}
+.action-sheet-btn.ghost:hover{background:rgba(255,255,255,0.12)}
+.form-input{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:var(--text);outline:none;border-radius:11px;padding:11px 12px;width:100%;font-size:14px;font-family:inherit;margin-bottom:16px;transition:border-color .2s}
+.form-input:focus{border-color:rgba(255,107,107,0.45)}
+
+/* ── MSG REQUESTS ── */
+.req-item{display:flex;align-items:flex-start;gap:12px;padding:14px 0;border-bottom:1px solid var(--border)}
+.req-item:last-child{border-bottom:none}
+.req-actions{display:flex;gap:8px;margin-top:10px}
+.req-btn{flex:1;padding:8px;border-radius:10px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.req-btn.accept{background:linear-gradient(135deg,#FF6B6B,#FF8C42);color:#fff}
+.req-btn.decline{background:rgba(255,255,255,0.07);color:var(--text);border:1px solid rgba(255,255,255,0.1)}
+.req-btn.report{background:rgba(239,68,68,0.08);color:#ef4444;border:1px solid rgba(239,68,68,0.2)}
+
+/* ── AGE GATE ── */
+#ageGate{position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center}
+.age-logo{font-family:'Playfair Display',serif;font-style:italic;font-weight:700;font-size:42px;background:linear-gradient(135deg,#FF6B6B,#FF8C42);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+.age-btn{padding:14px 40px;border-radius:14px;border:none;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;margin:6px}
+.age-btn.yes{background:linear-gradient(135deg,#FF6B6B,#FF8C42);color:#fff;box-shadow:0 5px 18px rgba(255,107,107,0.35)}
+.age-btn.no{background:rgba(255,255,255,0.07);color:var(--text)}
+.age-disclaimer{font-size:11px;color:rgba(255,255,255,0.2);margin-top:24px;line-height:1.7;max-width:400px}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--surface);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:11px 20px;font-size:13px;font-weight:500;z-index:500;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,0.4)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ══════════════════════════════════════
+   MOBILE (≤ 900px) — collapse to phone layout
+══════════════════════════════════════ */
+@media(max-width:900px){
+  #sidebar{display:none}
+  #right{display:none}
+  #center{border-right:none}
+  #layout{display:block;max-width:100%}
+  #mobileNav{display:flex!important}
+  .center-header{padding:12px 14px}
+  .center-search{width:140px}
+  .center-search:focus{width:180px}
+  .hobby-cards{grid-template-columns:repeat(2,1fr)}
+  .trend-grid-2{grid-template-columns:repeat(2,1fr)}
+  .explore-grid{grid-template-columns:repeat(1,1fr)}
+  #msgLayout{height:auto;flex-direction:column}
+  .msg-sidebar{width:100%;border-right:none;border-bottom:1px solid var(--border);max-height:none}
+  .chat-pane{min-height:60vh}
+  .lb-wrap{flex-direction:column;width:96%;height:95vh}
+  .lb-img-pane{flex:none;height:55%}
+  .lb-detail{width:100%;border-left:none;border-top:1px solid var(--border);flex:1}
+  .profile-cover{height:120px}
+  .hobby-cards{padding:12px}
+  .settings-wrap{padding:16px}
+  .modal{border-radius:20px}
+  .screen{padding-bottom:70px}
+}
+@media(min-width:901px){
+  #mobileNav{display:none!important}
+  .screen{padding-bottom:20px}
+}
+
+/* Mobile bottom nav */
+#mobileNav{position:fixed;bottom:0;left:0;right:0;background:rgba(10,10,15,0.97);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,0.07);justify-content:space-around;padding:7px 0 12px;z-index:100}
+.mob-nav-btn{background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--muted);font-family:inherit;transition:color .2s;padding:0 8px;position:relative}
+.mob-nav-btn.active{color:var(--accent)}
+.mob-nav-icon{font-size:19px}
+.mob-nav-lbl{font-size:10px}
+.mob-nav-btn.active .mob-nav-lbl{font-weight:600}
+.mob-badge{position:absolute;top:0;right:2px;width:8px;height:8px;background:var(--accent);border-radius:50%;border:2px solid var(--bg)}
+</style>
+</head>
+<body>
+
+<!-- AGE GATE -->
+<div id="ageGate">
+  <div class="age-logo">HobbySnap</div>
+  <div style="font-size:15px;color:var(--muted);margin-bottom:36px">Share your passions with the world</div>
+  <div style="font-size:22px;font-weight:700;margin-bottom:10px">Before you continue</div>
+  <div style="font-size:15px;color:rgba(255,255,255,0.65);margin-bottom:28px;line-height:1.6;max-width:380px">You must be <strong>13 years or older</strong> to use HobbySnap. Are you 13 or older?</div>
+  <div>
+    <button class="age-btn yes" onclick="passAgeGate()">Yes, I'm 13 or older</button>
+    <button class="age-btn no" onclick="failAgeGate()">No, I'm under 13</button>
+  </div>
+  <div class="age-disclaimer">By continuing you agree to our Terms of Service and Privacy Policy. We prohibit harmful or explicit content. CSAM is reported to NCMEC immediately. All reports reviewed within 24 hours.</div>
+</div>
+
+<div id="layout">
+
+  <!-- ═══ LEFT SIDEBAR ═══ -->
+  <aside id="sidebar">
+    <div class="sidebar-logo">HobbySnap</div>
+    <button class="nav-item active" data-tab="home"><span class="ni-icon">🏠</span><span class="ni-label">Home</span></button>
+    <button class="nav-item" data-tab="explore"><span class="ni-icon">🔍</span><span class="ni-label">Explore</span></button>
+    <button class="nav-item" data-tab="hobbies"><span class="ni-icon">🎯</span><span class="ni-label">Hobbies</span></button>
+    <button class="nav-item" data-tab="messages"><span class="ni-icon">💬</span><span class="ni-label">Messages</span><span class="ni-badge hidden" id="msgSidebarBadge">4</span></button>
+    <button class="nav-item" data-tab="notifications"><span class="ni-icon">🔔</span><span class="ni-label">Notifications</span><span class="ni-badge hidden" id="notifSidebarBadge">3</span></button>
+    <button class="nav-item" data-tab="profile"><span class="ni-icon">👤</span><span class="ni-label">Profile</span></button>
+    <button class="nav-item" data-tab="settings"><span class="ni-icon">⚙️</span><span class="ni-label">Settings</span></button>
+    <div class="sidebar-divider"></div>
+    <button class="sidebar-post-btn" onclick="openUpload()">+ New Post</button>
+    <div class="sidebar-spacer"></div>
+    <div class="sidebar-user" onclick="switchTab('profile')">
+      <img src="https://i.pravatar.cc/48?img=20" alt="me">
+      <div><div class="sidebar-user-name">@you</div><div class="sidebar-user-sub">View profile</div></div>
+    </div>
+  </aside>
+
+  <!-- ═══ CENTER ═══ -->
+  <main id="center">
+    <div class="center-header">
+      <div class="center-title" id="centerTitle">Home</div>
+      <input class="center-search center-search-transition" id="searchInput" placeholder="Search...">
+    </div>
+
+    <!-- Chips (home only) -->
+    <div class="chips-bar" id="chipsBar"></div>
+
+    <!-- HOME -->
+    <div id="screen-home" class="screen active">
+      <div class="grid-wrap">
+        <div class="photo-grid" id="photoGrid"></div>
+        <div id="emptyState" class="empty-state hidden"><div class="big">📸</div><p>No posts found.</p></div>
+      </div>
+    </div>
+
+    <!-- EXPLORE -->
+    <div id="screen-explore" class="screen">
+      <div class="sec-title">Browse by Hobby</div>
+      <div class="explore-grid" id="exploreTags"></div>
+      <div class="sec-title">Trending Now</div>
+      <div class="trend-grid-2" id="trendGrid"></div>
+    </div>
+
+    <!-- HOBBIES -->
+    <div id="screen-hobbies" class="screen">
+      <div class="sec-title">All Hobbies</div>
+      <div class="hobby-cards" id="hobbyCards"></div>
+    </div>
+
+    <!-- MESSAGES -->
+    <div id="screen-messages" class="screen" style="padding-bottom:0">
+      <div id="msgLayout">
+        <!-- left conv list -->
+        <div class="msg-sidebar">
+          <div class="msg-sidebar-top">
+            <div class="msg-sidebar-title">Messages</div>
+            <input class="msg-search" id="msgSearch" placeholder="Search messages..." oninput="filterMessages(this.value)">
+          </div>
+          <div class="msg-req-row" onclick="openRequestsModal()">
+            <span style="font-size:18px">⚠️</span>
+            <div><div style="font-size:13px;font-weight:600">Message Requests</div><div class="msg-req-sub" id="reqSubText" style="font-size:12px;color:var(--muted)">3 waiting</div></div>
+            <span style="margin-left:auto;font-size:18px;color:var(--muted)">›</span>
+          </div>
+          <div class="msg-list" id="msgList"></div>
+        </div>
+        <!-- right chat pane -->
+        <div class="chat-pane">
+          <div class="chat-pane-empty" id="chatEmpty">
+            <div class="big">💬</div>
+            <div style="font-weight:600;font-size:16px">Your Messages</div>
+            <div style="font-size:14px;color:var(--muted)">Select a conversation to start chatting</div>
+            <button class="btn-share" style="width:auto;padding:10px 24px;margin-top:8px" onclick="openNewMessageModal()">New Message</button>
+          </div>
+          <div id="chatArea" style="display:none;flex-direction:column;height:100%;flex:1">
+            <div class="chat-hdr">
+              <img class="chat-ava" id="chatAva" src="" alt="">
+              <div><div class="chat-name" id="chatName"></div><div class="chat-status" id="chatStatus"></div></div>
+              <div class="chat-hdr-actions">
+                <button class="chat-action-btn" onclick="showToast('Voice call coming soon!')">📞</button>
+                <button class="chat-action-btn" onclick="showToast('Video call coming soon!')">📹</button>
+                <button class="chat-action-btn" onclick="showChatMenu()">⋯</button>
+              </div>
+            </div>
+            <div class="chat-messages" id="chatMessages"></div>
+            <div class="chat-input-row">
+              <button class="chat-attach" onclick="showToast('Photo sharing coming soon!')">📎</button>
+              <input class="chat-input" id="chatInput" placeholder="Message..." onkeydown="if(event.key==='Enter')sendMessage()">
+              <button class="chat-send" onclick="sendMessage()">➤</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div id="screen-notifications" class="screen">
+      <div id="notifList"></div>
+    </div>
+
+    <!-- PROFILE -->
+    <div id="screen-profile" class="screen" style="padding-bottom:0">
+      <div class="profile-cover"><div class="profile-cover-inner"></div></div>
+      <div class="profile-info">
+        <div class="profile-pic-wrap"><img class="profile-pic" src="https://i.pravatar.cc/150?img=20" alt="me" onclick="showToast('Photo upload coming soon!')"></div>
+        <div class="profile-top-row">
+          <div>
+            <div class="profile-name">@you</div>
+            <div class="profile-handle">Hobby Enthusiast</div>
+          </div>
+        </div>
+        <div class="profile-bio">Hobby enthusiast 📸 Sharing moments that matter. Wesley Chapel, FL 🌴</div>
+        <div class="profile-stats-row">
+          <div class="pstat" onclick="showToast('Your posts')"><span class="pnum" id="profilePostCount">0</span><span class="plbl">Posts</span></div>
+          <div class="pstat" onclick="showFollowers()"><span class="pnum">1.2k</span><span class="plbl">Followers</span></div>
+          <div class="pstat" onclick="showFollowing()"><span class="pnum">348</span><span class="plbl">Following</span></div>
+        </div>
+        <div class="profile-hobby-tags" id="profileTags"></div>
+        <div class="profile-action-btns">
+          <button class="prof-btn primary" onclick="openEditProfile()">Edit Profile</button>
+          <button class="prof-btn" onclick="shareProfile()">Share Profile</button>
+          <button class="prof-btn" onclick="switchTab('settings')">⚙️ Settings</button>
+        </div>
+      </div>
+      <div class="profile-divider"></div>
+      <div class="grid-wrap" style="padding-bottom:20px;padding-top:4px">
+        <div class="photo-grid" id="profileGrid"></div>
+        <div id="profileEmpty" class="empty-state hidden"><div class="big">📷</div><p>No posts yet. Share your first!</p></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="screen-settings" class="screen">
+      <div class="settings-wrap">
+        <div style="font-size:20px;font-weight:700;margin-bottom:4px">Settings</div>
+        <div class="settings-section-title">Safety & Privacy</div>
+        <div class="setting-row" onclick="toggleSetting('privateAccount')"><div class="setting-icon">🔒</div><div style="flex:1"><div class="setting-label">Private Account</div><div class="setting-sub">Only approved followers see your posts</div></div><button class="toggle" id="toggle-privateAccount"></button></div>
+        <div class="setting-row" onclick="toggleSetting('msgRequests')"><div class="setting-icon">💬</div><div style="flex:1"><div class="setting-label">Message Requests</div><div class="setting-sub">Strangers must request before messaging you</div></div><button class="toggle on" id="toggle-msgRequests"></button></div>
+        <div class="setting-row" onclick="toggleSetting('hideOnline')"><div class="setting-icon">👁️</div><div style="flex:1"><div class="setting-label">Hide Online Status</div><div class="setting-sub">Others won't see when you're active</div></div><button class="toggle" id="toggle-hideOnline"></button></div>
+        <div class="setting-row" onclick="toggleSetting('readReceipts')"><div class="setting-icon">✅</div><div style="flex:1"><div class="setting-label">Read Receipts</div><div class="setting-sub">Show when you've read messages</div></div><button class="toggle on" id="toggle-readReceipts"></button></div>
+        <div class="setting-row" onclick="toggleSetting('contentFilter')"><div class="setting-icon">🛡️</div><div style="flex:1"><div class="setting-label">Content Filter</div><div class="setting-sub">Hide potentially inappropriate content</div></div><button class="toggle on" id="toggle-contentFilter"></button></div>
+        <div class="setting-divider"></div>
+        <div class="settings-section-title">Notifications</div>
+        <div class="setting-row" onclick="toggleSetting('notifLikes')"><div class="setting-icon">❤️</div><div style="flex:1"><div class="setting-label">Likes</div></div><button class="toggle on" id="toggle-notifLikes"></button></div>
+        <div class="setting-row" onclick="toggleSetting('notifComments')"><div class="setting-icon">💬</div><div style="flex:1"><div class="setting-label">Comments</div></div><button class="toggle on" id="toggle-notifComments"></button></div>
+        <div class="setting-row" onclick="toggleSetting('notifFollows')"><div class="setting-icon">👤</div><div style="flex:1"><div class="setting-label">New Followers</div></div><button class="toggle on" id="toggle-notifFollows"></button></div>
+        <div class="setting-row" onclick="toggleSetting('notifMessages')"><div class="setting-icon">📨</div><div style="flex:1"><div class="setting-label">Messages</div></div><button class="toggle on" id="toggle-notifMessages"></button></div>
+        <div class="setting-divider"></div>
+        <div class="settings-section-title">Account</div>
+        <div class="setting-row" onclick="showToast('Verification coming soon!')"><div class="setting-icon">✔️</div><div style="flex:1"><div class="setting-label">Verify Account</div><div class="setting-sub">Add phone or ID verification</div></div><span class="setting-chevron">›</span></div>
+        <div class="setting-row" onclick="showToast('Blocked users list coming soon!')"><div class="setting-icon">🚫</div><div style="flex:1"><div class="setting-label">Blocked Users</div><div class="setting-sub" id="blockedCount">0 users blocked</div></div><span class="setting-chevron">›</span></div>
+        <div class="setting-row" onclick="showToast('Password change coming soon!')"><div class="setting-icon">🔑</div><div style="flex:1"><div class="setting-label">Change Password</div></div><span class="setting-chevron">›</span></div>
+        <div class="setting-divider"></div>
+        <div style="padding:12px 0">
+          <button class="danger-btn" onclick="confirmLogout()">Log Out</button>
+          <button class="danger-btn" onclick="confirmDeleteAccount()">Delete Account</button>
+        </div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.15);padding:8px 0 16px;line-height:1.6">HobbySnap v1.0 · Report illegal content: safety@hobbysnap.app<br>CSAM is reported to NCMEC immediately. All reports reviewed within 24h.</div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ═══ RIGHT SIDEBAR ═══ -->
+  <aside id="right">
+    <div class="right-ad">
+      <div class="ad-box ad-rect">
+        <span class="ad-lbl">Advertisement</span>
+        <span class="ad-dim">300×250 — Google AdSense</span>
+        <span class="ad-code">data-ad-client="ca-pub-XXXXXXXX"</span>
+      </div>
+    </div>
+    <div class="widget">
+      <div class="widget-title">Suggested for You</div>
+      <div id="suggestedUsers"></div>
+    </div>
+    <div class="widget">
+      <div class="widget-title">Trending Hobbies</div>
+      <div id="trendingHobbies"></div>
+    </div>
+    <div class="widget" style="margin-bottom:0">
+      <div class="ad-box ad-sq">
+        <span class="ad-lbl">Sponsored</span>
+        <span class="ad-dim">300×200 — Google AdSense</span>
+        <span class="ad-code">data-ad-slot="XXXXXXXXXX"</span>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<!-- MOBILE BOTTOM NAV -->
+<nav id="mobileNav" style="display:none">
+  <button class="mob-nav-btn active" data-tab="home"><span class="mob-nav-icon">🏠</span><span class="mob-nav-lbl">Home</span></button>
+  <button class="mob-nav-btn" data-tab="explore"><span class="mob-nav-icon">🔍</span><span class="mob-nav-lbl">Explore</span></button>
+  <button class="mob-nav-btn" data-tab="hobbies"><span class="mob-nav-icon">🎯</span><span class="mob-nav-lbl">Hobbies</span></button>
+  <button class="mob-nav-btn" data-tab="messages"><span class="mob-nav-icon">💬</span><span class="mob-nav-lbl">Messages</span><span class="mob-badge hidden" id="mobMsgBadge"></span></button>
+  <button class="mob-nav-btn" data-tab="profile"><span class="mob-nav-icon">👤</span><span class="mob-nav-lbl">Profile</span></button>
+</nav>
+
+<!-- LIGHTBOX -->
+<div id="lightbox">
+  <div class="lb-wrap">
+    <div class="lb-img-pane"><img id="lbImg" src="" alt=""></div>
+    <div class="lb-detail">
+      <div class="lb-hdr">
+        <img class="lb-ava" id="lbAva" src="" alt="">
+        <div><div class="lb-user" id="lbUser"></div><div class="lb-time" id="lbTime"></div></div>
+        <button class="lb-x" id="lbClose">✕</button>
+      </div>
+      <div class="lb-scroll">
+        <div class="lb-tags" id="lbTags"></div>
+        <div class="lb-actions">
+          <button class="lb-btn" id="lbLike">🤍</button>
+          <button class="lb-btn" id="lbComment">💬</button>
+          <button class="lb-btn" id="lbShare">🔗</button>
+          <div style="flex:1"></div>
+          <button class="lb-btn" id="lbSave">🔖</button>
+        </div>
+        <div class="lb-likes" id="lbLikes"></div>
+        <div class="lb-caption" id="lbCaption"></div>
+        <div class="lb-viewcmt" id="lbViewCmt"></div>
+        <div class="lb-comments-section" id="lbCommentsSection"></div>
+      </div>
+      <div class="lb-add-comment">
+        <img src="https://i.pravatar.cc/48?img=20" style="width:26px;height:26px;border-radius:50%;object-fit:cover;flex-shrink:0" alt="">
+        <input class="lb-cmt-input" id="lbCmtInput" placeholder="Add a comment...">
+        <button class="lb-cmt-send" id="lbCmtSend">➤</button>
+      </div>
+      <div class="lb-menu-row">
+        <button class="lb-menu-btn" id="lbMsgUser">💬 Message</button>
+        <button class="lb-menu-btn danger" id="lbReport">🚩 Report</button>
+        <button class="lb-menu-btn danger" id="lbBlock">🚫 Block</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- UPLOAD MODAL -->
+<div class="modal-bg" id="uploadModal">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title">New Post</span><button class="modal-x" onclick="closeModal('uploadModal');resetUpload()">✕</button></div>
+    <div class="img-picker" id="imgPicker"><div class="picker-hint" id="pickerHint"><div class="big">📷</div><p>Click to add photo</p></div><img id="previewImg" style="display:none" alt=""></div>
+    <input type="file" id="fileInput" accept="image/*" style="display:none">
+    <textarea class="cap" id="captionInput" rows="3" placeholder="Write a caption..."></textarea>
+    <div class="tag-lbl">Tag your hobbies</div>
+    <div class="tag-grid" id="tagGrid"></div>
+    <button class="btn-share" id="btnShare" disabled>Share Post</button>
+  </div>
+</div>
+
+<!-- REPORT MODAL -->
+<div class="modal-bg" id="reportModal">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title">🚩 Report</span><button class="modal-x" onclick="closeModal('reportModal')">✕</button></div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Why are you reporting this? Your report is anonymous and reviewed within 24 hours.</p>
+    <div id="reportOptions"></div>
+  </div>
+</div>
+
+<!-- BLOCK MODAL -->
+<div class="modal-bg" id="blockModal">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title">🚫 Block User</span><button class="modal-x" onclick="closeModal('blockModal')">✕</button></div>
+    <p style="font-size:14px;line-height:1.7;margin-bottom:20px;color:rgba(255,255,255,0.8)">Blocking <strong id="blockUsername"></strong> will:<br>• Hide their posts from your feed<br>• Prevent them messaging you<br>• Remove them from your followers<br>• They won't be notified</p>
+    <button class="action-sheet-btn danger" id="confirmBlockBtn">Block User</button>
+    <button class="action-sheet-btn ghost" onclick="closeModal('blockModal')">Cancel</button>
+  </div>
+</div>
+
+<!-- EDIT PROFILE MODAL -->
+<div class="modal-bg" id="editProfileModal">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title">Edit Profile</span><button class="modal-x" onclick="closeModal('editProfileModal')">✕</button></div>
+    <div class="tag-lbl">Display Name</div>
+    <input class="form-input" id="editName" value="you">
+    <div class="tag-lbl">Bio</div>
+    <textarea class="cap" id="editBio" rows="3">Hobby enthusiast 📸 Sharing moments that matter.
+Wesley Chapel, FL 🌴</textarea>
+    <div class="tag-lbl">My Hobbies</div>
+    <div class="tag-grid" id="editTagGrid"></div>
+    <button class="btn-share" onclick="saveProfile()">Save Changes</button>
+  </div>
+</div>
+
+<!-- GENERIC MODAL -->
+<div class="modal-bg" id="sheetModal">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title" id="sheetTitle"></span><button class="modal-x" onclick="closeModal('sheetModal')">✕</button></div>
+    <div id="sheetContent"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════════
+const HOBBIES=["Photography","Painting","Cooking","Gaming","Hiking","Gardening","Music","Reading","Fitness","Travel","Knitting","Cycling","Surfing","Drawing","Yoga","DIY","Film","Dance","Pottery","Coding"];
+const HOBBY_ICONS={Photography:"📷",Painting:"🎨",Cooking:"🍳",Gaming:"🎮",Hiking:"🥾",Gardening:"🌱",Music:"🎸",Reading:"📚",Fitness:"💪",Travel:"✈️",Knitting:"🧶",Cycling:"🚴",Surfing:"🏄",Drawing:"✏️",Yoga:"🧘",DIY:"🔨",Film:"🎬",Dance:"💃",Pottery:"🏺",Coding:"💻"};
+const TAG_COLORS={Photography:"#FF6B6B",Painting:"#4ECDC4",Cooking:"#FFE66D",Gaming:"#A78BFA",Hiking:"#6EE7B7",Gardening:"#86EFAC",Music:"#FCA5A5",Reading:"#93C5FD",Fitness:"#FB923C",Travel:"#67E8F9",Knitting:"#F9A8D4",Cycling:"#A3E635",Surfing:"#38BDF8",Drawing:"#FBBF24",Yoga:"#C4B5FD",DIY:"#D97706",Film:"#9CA3AF",Dance:"#EC4899",Pottery:"#B45309",Coding:"#10B981"};
+
+let posts=[
+  {id:1,user:"lens_wanderer",avatar:"https://i.pravatar.cc/48?img=1",image:"https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80",caption:"Golden hour at the summit. Worth every step 🏔️",tags:["Photography","Hiking","Travel"],likes:243,comments:[{u:"wave_rider",a:"https://i.pravatar.cc/48?img=22",t:"Stunning shot!",time:"1h ago"},{u:"grove_keeper",a:"https://i.pravatar.cc/48?img=17",t:"Which mountain is this?",time:"45m ago"}],time:"2h ago",liked:false,saved:false},
+  {id:2,user:"brush.strokes",avatar:"https://i.pravatar.cc/48?img=5",image:"https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=600&q=80",caption:"New canvas, fresh perspective 🎨",tags:["Painting","Drawing"],likes:87,comments:[{u:"code_poet",a:"https://i.pravatar.cc/48?img=41",t:"Love the colour palette!",time:"3h ago"}],time:"5h ago",liked:true,saved:false},
+  {id:3,user:"the_kitchen_lab",avatar:"https://i.pravatar.cc/48?img=9",image:"https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80",caption:"Homemade ramen from scratch — 6 hours well spent 🍜",tags:["Cooking"],likes:512,comments:[],time:"1d ago",liked:false,saved:true},
+  {id:4,user:"pedal.life",avatar:"https://i.pravatar.cc/48?img=12",image:"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80",caption:"Morning ride through the fog 🚴",tags:["Cycling","Fitness"],likes:189,comments:[],time:"2d ago",liked:false,saved:false},
+  {id:5,user:"grove_keeper",avatar:"https://i.pravatar.cc/48?img=17",image:"https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600&q=80",caption:"First harvest of the season 🌿",tags:["Gardening"],likes:334,comments:[],time:"3d ago",liked:false,saved:false},
+  {id:6,user:"wave_rider",avatar:"https://i.pravatar.cc/48?img=22",image:"https://images.unsplash.com/photo-1502680390469-be75c86b636f?w=600&q=80",caption:"Perfect swell this morning 🌊",tags:["Surfing","Fitness"],likes:421,comments:[],time:"3d ago",liked:false,saved:false},
+  {id:7,user:"melody.maker",avatar:"https://i.pravatar.cc/48?img=28",image:"https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&q=80",caption:"Late night studio session 🎸",tags:["Music"],likes:156,comments:[],time:"4d ago",liked:false,saved:false},
+  {id:8,user:"yoga.with.sam",avatar:"https://i.pravatar.cc/48?img=33",image:"https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=600&q=80",caption:"Finding stillness in the chaos 🧘",tags:["Yoga","Fitness"],likes:278,comments:[],time:"5d ago",liked:false,saved:false},
+  {id:9,user:"code_poet",avatar:"https://i.pravatar.cc/48?img=41",image:"https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=600&q=80",caption:"Three monitors and a cold brew ☕",tags:["Coding"],likes:93,comments:[],time:"6d ago",liked:false,saved:false},
+  {id:10,user:"trailblazer_k",avatar:"https://i.pravatar.cc/48?img=44",image:"https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80",caption:"Views like this make it all worth it 🏕️",tags:["Hiking","Photography","Travel"],likes:367,comments:[],time:"1w ago",liked:false,saved:false},
+  {id:11,user:"book_nook",avatar:"https://i.pravatar.cc/48?img=47",image:"https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600&q=80",caption:"Sunday vibes 📚 Completely unputdownable.",tags:["Reading"],likes:112,comments:[],time:"1w ago",liked:false,saved:false},
+  {id:12,user:"clay.hands",avatar:"https://i.pravatar.cc/48?img=53",image:"https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=600&q=80",caption:"Nothing more meditative than the wheel 🏺",tags:["Pottery"],likes:204,comments:[],time:"1w ago",liked:false,saved:false},
+];
+let conversations=[
+  {id:1,user:"wave_rider",avatar:"https://i.pravatar.cc/48?img=22",online:true,unread:3,messages:[{mine:false,text:"Hey! Loved your latest hiking shot 🏔️",time:"2:14 PM"},{mine:true,text:"Thanks so much! That was a tough climb lol",time:"2:16 PM"},{mine:false,text:"Which trail was it?",time:"2:17 PM"},{mine:false,text:"I want to do something similar next weekend 🥾",time:"2:17 PM"}]},
+  {id:2,user:"brush.strokes",avatar:"https://i.pravatar.cc/48?img=5",online:false,unread:1,messages:[{mine:false,text:"Can you share the brush set you use?",time:"Yesterday"},{mine:true,text:"Sure! It's the Kyle Ultimate Megapack",time:"Yesterday"},{mine:false,text:"Amazing, thank you! 🎨",time:"Yesterday"}]},
+  {id:3,user:"the_kitchen_lab",avatar:"https://i.pravatar.cc/48?img=9",online:true,unread:0,messages:[{mine:false,text:"Recipe incoming! 🍜",time:"1h ago"}]},
+  {id:4,user:"pedal.life",avatar:"https://i.pravatar.cc/48?img=12",online:false,unread:0,messages:[{mine:true,text:"See you on the trail Sunday!",time:"3h ago"},{mine:false,text:"Definitely! 7am works?",time:"3h ago"}]},
+  {id:5,user:"grove_keeper",avatar:"https://i.pravatar.cc/48?img=17",online:true,unread:0,messages:[{mine:false,text:"Thanks for the gardening tip 🌿",time:"1d ago"}]},
+];
+let messageRequests=[
+  {id:1,user:"suspicious_user99",avatar:"https://i.pravatar.cc/48?img=60",text:"Hey gorgeous, want to chat? 😉",time:"3h ago"},
+  {id:2,user:"promo_bot_2024",avatar:"https://i.pravatar.cc/48?img=61",text:"Win $1000! Click here now!! 💰💰",time:"5h ago"},
+  {id:3,user:"new_user_join",avatar:"https://i.pravatar.cc/48?img=62",text:"Love your photos! Want to collab?",time:"1d ago"},
+];
+let notifications=[
+  {id:1,type:"like",user:"wave_rider",avatar:"https://i.pravatar.cc/48?img=22",text:"liked your photo",postImg:"https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=80&q=80",time:"2m ago",unread:true,postId:1},
+  {id:2,type:"comment",user:"grove_keeper",avatar:"https://i.pravatar.cc/48?img=17",text:'commented: "Which mountain is this?"',postImg:"https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=80&q=80",time:"45m ago",unread:true,postId:1},
+  {id:3,type:"follow",user:"melody.maker",avatar:"https://i.pravatar.cc/48?img=28",text:"started following you",time:"1h ago",unread:true},
+  {id:4,type:"like",user:"brush.strokes",avatar:"https://i.pravatar.cc/48?img=5",text:"liked your photo",postImg:"https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=80&q=80",time:"3h ago",unread:false,postId:2},
+  {id:5,type:"follow",user:"clay.hands",avatar:"https://i.pravatar.cc/48?img=53",text:"started following you",time:"1d ago",unread:false},
+];
+let blockedUsers=[];
+let activeLbId=null;
+let activeChatId=null;
+let selectedHobby=null;
+let searchTerm="";
+let newPostTags=[];
+let newPostPreview=null;
+let myHobbies=["Photography","Hiking","Travel"];
+let settings={privateAccount:false,msgRequests:true,hideOnline:false,readReceipts:true,contentFilter:true,notifLikes:true,notifComments:true,notifFollows:true,notifMessages:true};
+const SCREEN_TITLES={home:"Home",explore:"Explore",hobbies:"Hobbies",messages:"Messages",notifications:"Notifications",profile:"Profile",settings:"Settings"};
+
+// ═══════════════════════════════════════════════
+//  AGE GATE
+// ═══════════════════════════════════════════════
+function passAgeGate(){document.getElementById('ageGate').style.display='none'}
+function failAgeGate(){document.getElementById('ageGate').innerHTML='<div class="age-logo">HobbySnap</div><div style="font-size:56px;margin:24px 0">🚫</div><div style="font-size:22px;font-weight:700;margin-bottom:12px">Access Denied</div><div style="font-size:15px;color:rgba(255,255,255,0.5);line-height:1.7;max-width:360px">Sorry, you must be 13 or older to use HobbySnap. Please ask a parent or guardian for help.</div>'}
+
+// ═══════════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════════
+let toastTimer;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// ═══════════════════════════════════════════════
+//  MODAL
+// ═══════════════════════════════════════════════
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+
+// ═══════════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════════
+const ALL_TABS=['home','explore','hobbies','messages','notifications','profile','settings'];
+function switchTab(tab){
+  // sidebar nav items
+  document.querySelectorAll('.nav-item[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  // mobile nav
+  document.querySelectorAll('.mob-nav-btn[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  // screens
+  ALL_TABS.forEach(id=>{const el=document.getElementById('screen-'+id);if(el)el.classList.toggle('active',id===tab)});
+  // chips bar only on home
+  document.getElementById('chipsBar').style.display=tab==='home'?'':'none';
+  // search only on home
+  document.getElementById('searchInput').style.display=tab==='home'?'':'none';
+  // title
+  document.getElementById('centerTitle').textContent=SCREEN_TITLES[tab]||tab;
+  if(tab==='profile')renderProfileGrid();
+  if(tab==='notifications')markNotifsRead();
+}
+document.querySelectorAll('[data-tab]').forEach(btn=>{
+  btn.addEventListener('click',()=>switchTab(btn.dataset.tab));
+});
+
+// ═══════════════════════════════════════════════
+//  CHIPS
+// ═══════════════════════════════════════════════
+function buildChips(){
+  const w=document.getElementById('chipsBar');
+  w.innerHTML='';
+  const all=document.createElement('button');
+  all.className='chip all'+(selectedHobby===null?' active':'');
+  all.textContent='All';
+  all.onclick=()=>{selectedHobby=null;buildChips();renderGrid()};
+  w.appendChild(all);
+  HOBBIES.forEach(h=>{
+    const c=TAG_COLORS[h];
+    const b=document.createElement('button');
+    b.className='chip';b.textContent=h;
+    b.style.cssText=selectedHobby===h?`background:${c};border-color:${c};color:#fff`:`background:${c}18;border-color:${c}44;color:${c}`;
+    b.onclick=()=>{selectedHobby=selectedHobby===h?null:h;buildChips();renderGrid()};
+    w.appendChild(b);
+  });
+}
+
+// ═══════════════════════════════════════════════
+//  GRID
+// ═══════════════════════════════════════════════
+function getFiltered(){
+  return posts.filter(p=>{
+    if(blockedUsers.includes(p.user))return false;
+    const hOk=!selectedHobby||p.tags.includes(selectedHobby);
+    const st=searchTerm.toLowerCase();
+    const sOk=!st||p.user.toLowerCase().includes(st)||p.caption.toLowerCase().includes(st)||p.tags.some(t=>t.toLowerCase().includes(st));
+    return hOk&&sOk;
+  });
+}
+function renderGrid(){
+  const grid=document.getElementById('photoGrid');
+  const empty=document.getElementById('emptyState');
+  const filtered=getFiltered();
+  grid.innerHTML='';
+  if(!filtered.length){empty.classList.remove('hidden');return}
+  empty.classList.add('hidden');
+  filtered.forEach((post,i)=>{
+    if(i>0&&i%9===0){
+      const ad=document.createElement('div');
+      ad.className='grid-ad';
+      ad.innerHTML=`<div class="ad-box" style="height:100%;border-radius:4px"><span class="ad-lbl">Sponsored</span><span class="ad-dim">Google AdSense</span></div>`;
+      grid.appendChild(ad);
+    }
+    const cell=document.createElement('div');
+    cell.className='grid-cell';
+    cell.style.animationDelay=`${(i%9)*0.03}s`;
+    const dot=post.tags[0]?TAG_COLORS[post.tags[0]]:'#FF6B6B';
+    cell.innerHTML=`<img src="${post.image}" alt="" loading="lazy"><div class="grid-overlay"><span class="grid-stat">❤️ ${fmt(post.likes)}</span><span class="grid-stat">💬 ${post.comments.length}</span></div><div class="grid-dot" style="background:${dot}"></div>`;
+    cell.onclick=()=>openLb(post.id);
+    grid.appendChild(cell);
+  });
+}
+function fmt(n){return n>=1000?(n/1000).toFixed(1)+'k':n}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+// ═══════════════════════════════════════════════
+//  LIGHTBOX
+// ═══════════════════════════════════════════════
+const lb=document.getElementById('lightbox');
+function openLb(id){
+  const post=posts.find(p=>p.id===id);if(!post)return;
+  activeLbId=id;
+  document.getElementById('lbAva').src=post.avatar;
+  document.getElementById('lbUser').textContent='@'+post.user;
+  document.getElementById('lbTime').textContent=post.time;
+  document.getElementById('lbImg').src=post.image;
+  document.getElementById('lbLikes').textContent=post.likes.toLocaleString()+' likes';
+  document.getElementById('lbLike').textContent=post.liked?'❤️':'🤍';
+  document.getElementById('lbSave').textContent='🔖';
+  document.getElementById('lbSave').style.opacity=post.saved?'1':'0.5';
+  document.getElementById('lbCaption').innerHTML=`<strong>@${post.user}</strong>${esc(post.caption)}`;
+  const vc=document.getElementById('lbViewCmt');
+  vc.textContent=post.comments.length?`View all ${post.comments.length} comments`:'';
+  vc.onclick=()=>toggleComments(id);
+  document.getElementById('lbTags').innerHTML=post.tags.map(t=>`<span class="lb-tag" style="background:${TAG_COLORS[t]}cc" data-tag="${t}">#${t}</span>`).join('');
+  document.querySelectorAll('#lbTags .lb-tag').forEach(el=>el.onclick=()=>{closeLb();selectedHobby=el.dataset.tag;buildChips();renderGrid()});
+  document.getElementById('lbCommentsSection').style.display='none';
+  document.getElementById('lbCommentsSection').innerHTML='';
+  document.getElementById('lbMsgUser').textContent='💬 Message @'+post.user;
+  document.getElementById('lbBlock').textContent=blockedUsers.includes(post.user)?'✅ Unblock':'🚫 Block';
+  lb.classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeLb(){lb.classList.remove('open');document.body.style.overflow='';activeLbId=null}
+function toggleComments(id){
+  const post=posts.find(p=>p.id===id);
+  const cs=document.getElementById('lbCommentsSection');
+  if(cs.style.display==='block'){cs.style.display='none';return}
+  cs.innerHTML=post.comments.length?post.comments.map(c=>`<div class="lb-comment"><img class="lb-cmt-ava" src="${c.a}" alt=""><div class="lb-cmt-body"><span class="lb-cmt-user">@${c.u}</span>${esc(c.t)}<div style="font-size:10px;color:var(--muted);margin-top:3px">${c.time}</div></div></div>`).join(''):'<p style="font-size:13px;color:var(--muted);padding-bottom:12px">No comments yet. Be the first!</p>';
+  cs.style.display='block';
+}
+document.getElementById('lbClose').onclick=closeLb;
+lb.addEventListener('click',e=>{if(e.target===lb)closeLb()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&lb.classList.contains('open'))closeLb()});
+document.getElementById('lbLike').onclick=function(){
+  if(!activeLbId)return;
+  const post=posts.find(p=>p.id===activeLbId);
+  post.liked=!post.liked;post.likes+=post.liked?1:-1;
+  this.textContent=post.liked?'❤️':'🤍';
+  if(post.liked){this.style.animation='pulse 0.3s ease';setTimeout(()=>this.style.animation='',300)}
+  document.getElementById('lbLikes').textContent=post.likes.toLocaleString()+' likes';
+  renderGrid();
+};
+document.getElementById('lbSave').onclick=function(){
+  if(!activeLbId)return;
+  const post=posts.find(p=>p.id===activeLbId);
+  post.saved=!post.saved;this.style.opacity=post.saved?'1':'0.5';
+  showToast(post.saved?'Post saved!':'Post unsaved');
+};
+document.getElementById('lbShare').onclick=function(){
+  if(navigator.share)navigator.share({title:'HobbySnap',url:window.location.href}).catch(()=>{});
+  else{navigator.clipboard.writeText(window.location.href).then(()=>showToast('Link copied! 🔗'))}
+};
+document.getElementById('lbComment').onclick=function(){if(activeLbId){toggleComments(activeLbId);setTimeout(()=>document.getElementById('lbCmtInput').focus(),100)}};
+document.getElementById('lbCmtSend').onclick=submitComment;
+document.getElementById('lbCmtInput').onkeydown=e=>{if(e.key==='Enter')submitComment()};
+function submitComment(){
+  const input=document.getElementById('lbCmtInput');
+  const text=input.value.trim();if(!text||!activeLbId)return;
+  const post=posts.find(p=>p.id===activeLbId);
+  post.comments.push({u:'you',a:'https://i.pravatar.cc/48?img=20',t:text,time:'Just now'});
+  input.value='';
+  const cs=document.getElementById('lbCommentsSection');
+  if(cs.style.display==='block'){const el=document.createElement('div');el.className='lb-comment';el.innerHTML=`<img class="lb-cmt-ava" src="https://i.pravatar.cc/48?img=20" alt=""><div class="lb-cmt-body"><span class="lb-cmt-user">@you</span>${esc(text)}<div style="font-size:10px;color:var(--muted);margin-top:3px">Just now</div></div>`;cs.appendChild(el);cs.scrollTop=cs.scrollHeight}
+  document.getElementById('lbViewCmt').textContent=`View all ${post.comments.length} comments`;
+  renderGrid();showToast('Comment posted! 💬');
+}
+document.getElementById('lbMsgUser').onclick=function(){if(activeLbId){const post=posts.find(p=>p.id===activeLbId);closeLb();switchTab('messages');setTimeout(()=>openChatWith(post.user,post.avatar),100)}};
+document.getElementById('lbReport').onclick=function(){if(activeLbId){const post=posts.find(p=>p.id===activeLbId);closeLb();openReport(post.user)}};
+document.getElementById('lbBlock').onclick=function(){
+  if(!activeLbId)return;
+  const post=posts.find(p=>p.id===activeLbId);
+  if(blockedUsers.includes(post.user)){blockedUsers=blockedUsers.filter(u=>u!==post.user);showToast(`@${post.user} unblocked`);this.textContent='🚫 Block';updateBlockedCount()}
+  else{closeLb();openBlockModal(post.user)}
+};
+
+// ═══════════════════════════════════════════════
+//  REPORT
+// ═══════════════════════════════════════════════
+const REPORT_REASONS=[
+  {icon:'🔞',label:'Nudity or Sexual Content',sub:'Explicit or suggestive material'},
+  {icon:'👶',label:'Child Safety',sub:'Content involving minors — reported to NCMEC immediately'},
+  {icon:'💰',label:'Spam or Scam',sub:'Fake giveaways, phishing, or misleading links'},
+  {icon:'😡',label:'Hate Speech or Harassment',sub:'Bullying, threats, or discriminatory content'},
+  {icon:'⚠️',label:'Violence or Dangerous Acts',sub:'Content that depicts or promotes harm'},
+  {icon:'©️',label:'Copyright Violation',sub:"Unauthorized use of someone else's content"},
+  {icon:'🔫',label:'Illegal Activity',sub:'Drug sales, weapons, or other illegal content'},
+  {icon:'🆘',label:'Self-Harm or Suicide',sub:'Content that promotes or glorifies self-harm'},
+];
+function openReport(username){
+  document.getElementById('reportOptions').innerHTML='';
+  REPORT_REASONS.forEach(r=>{
+    const div=document.createElement('div');div.className='report-option';
+    div.innerHTML=`<div class="report-icon">${r.icon}</div><div><div class="report-label">${r.label}</div><div class="report-sub">${r.sub}</div></div>`;
+    div.onclick=()=>{closeModal('reportModal');showToast(r.label==='Child Safety'?'🚨 Reported to NCMEC. Thank you.':'✅ Report submitted — reviewed within 24h')};
+    document.getElementById('reportOptions').appendChild(div);
+  });
+  openModal('reportModal');
+}
+
+// ═══════════════════════════════════════════════
+//  BLOCK
+// ═══════════════════════════════════════════════
+function openBlockModal(username){
+  document.getElementById('blockUsername').textContent='@'+username;
+  document.getElementById('confirmBlockBtn').onclick=()=>{blockedUsers.push(username);closeModal('blockModal');renderGrid();updateBlockedCount();showToast(`@${username} blocked 🚫`)};
+  openModal('blockModal');
+}
+function updateBlockedCount(){document.getElementById('blockedCount').textContent=blockedUsers.length+' users blocked'}
+
+// ═══════════════════════════════════════════════
+//  EXPLORE
+// ═══════════════════════════════════════════════
+function buildExplore(){
+  const et=document.getElementById('exploreTags');
+  HOBBIES.forEach(h=>{
+    const c=TAG_COLORS[h];const cnt=posts.filter(p=>p.tags.includes(h)).length;
+    const card=document.createElement('div');card.className='etag-card';
+    card.style.cssText=`background:${c}18;border-color:${c}33;color:#fff`;
+    card.innerHTML=`<div class="etag-icon">${HOBBY_ICONS[h]}</div><div><div class="etag-name" style="color:${c}">#${h}</div><div class="etag-count">${cnt} posts</div></div>`;
+    card.onclick=()=>{switchTab('home');selectedHobby=h;buildChips();renderGrid()};
+    et.appendChild(card);
+  });
+  const tg=document.getElementById('trendGrid');
+  [...posts].sort((a,b)=>b.likes-a.likes).slice(0,8).forEach(post=>{
+    const cell=document.createElement('div');cell.className='trend-cell';
+    cell.innerHTML=`<img src="${post.image}" alt="" loading="lazy"><div class="trend-lbl"><div>@${post.user}</div><div style="font-size:11px;opacity:.8">❤️ ${fmt(post.likes)}</div></div>`;
+    cell.onclick=()=>openLb(post.id);
+    tg.appendChild(cell);
+  });
+}
+
+// ═══════════════════════════════════════════════
+//  HOBBIES
+// ═══════════════════════════════════════════════
+function buildHobbyCards(){
+  const hc=document.getElementById('hobbyCards');
+  HOBBIES.forEach(h=>{
+    const c=TAG_COLORS[h];const cnt=posts.filter(p=>p.tags.includes(h)).length;
+    const card=document.createElement('div');card.className='hcard';
+    card.style.cssText=`background:linear-gradient(135deg,${c}33,${c}18);border-color:${c}33;color:#fff`;
+    card.innerHTML=`<div class="hcard-icon">${HOBBY_ICONS[h]}</div><div class="hcard-name">${h}</div><div class="hcard-count">${cnt} post${cnt!==1?'s':''}</div>`;
+    card.onclick=()=>{switchTab('home');selectedHobby=h;buildChips();renderGrid()};
+    hc.appendChild(card);
+  });
+}
+
+// ═══════════════════════════════════════════════
+//  RIGHT SIDEBAR WIDGETS
+// ═══════════════════════════════════════════════
+function buildRightSidebar(){
+  // suggested users
+  const su=document.getElementById('suggestedUsers');
+  const suggested=[{img:1,user:"lens_wanderer",tags:"Photography, Travel"},{img:9,user:"the_kitchen_lab",tags:"Cooking"},{img:28,user:"melody.maker",tags:"Music"},{img:53,user:"clay.hands",tags:"Pottery"}];
+  suggested.forEach(s=>{
+    const div=document.createElement('div');div.className='suggested-user';
+    div.innerHTML=`<img class="sug-ava" src="https://i.pravatar.cc/48?img=${s.img}" alt=""><div style="flex:1"><div class="sug-name">@${s.user}</div><div class="sug-tags">${s.tags}</div></div><button class="follow-btn" onclick="this.textContent='✓';this.classList.add('following');showToast('Following @${s.user}')">Follow</button>`;
+    su.appendChild(div);
+  });
+  // trending hobbies
+  const th=document.getElementById('trendingHobbies');
+  const sorted=[...HOBBIES].sort((a,b)=>posts.filter(p=>p.tags.includes(b)).length-posts.filter(p=>p.tags.includes(a)).length).slice(0,6);
+  sorted.forEach((h,i)=>{
+    const cnt=posts.filter(p=>p.tags.includes(h)).length;
+    const div=document.createElement('div');div.className='trending-tag';
+    div.innerHTML=`<span class="tt-rank">${i+1}</span><span style="font-size:16px">${HOBBY_ICONS[h]}</span><span class="tt-name" style="color:${TAG_COLORS[h]}">#${h}</span><span class="tt-count">${cnt} posts</span>`;
+    div.onclick=()=>{switchTab('home');selectedHobby=h;buildChips();renderGrid()};
+    th.appendChild(div);
+  });
+}
+
+// ═══════════════════════════════════════════════
+//  MESSAGES
+// ═══════════════════════════════════════════════
+function buildMessages(){renderMsgList(conversations)}
+function renderMsgList(list){
+  const ml=document.getElementById('msgList');ml.innerHTML='';
+  list.forEach(conv=>{
+    const last=conv.messages[conv.messages.length-1];
+    const row=document.createElement('div');
+    row.className='msg-row'+(activeChatId===conv.id?' active':'');
+    row.id='msgRow-'+conv.id;
+    row.innerHTML=`<div class="msg-ava"><img src="${conv.avatar}" alt="${conv.user}">${conv.online?'<div class="online-dot"></div>':''}</div><div style="flex:1;min-width:0"><div class="msg-name" style="${conv.unread?'font-weight:700':''}">@${conv.user}</div><div class="msg-preview">${last?esc(last.text):''}</div></div><div class="msg-meta"><div class="msg-time">${last?last.time:''}</div>${conv.unread?`<span class="msg-badge">${conv.unread}</span>`:''}</div>`;
+    row.onclick=()=>openChat(conv.id);
+    ml.appendChild(row);
+  });
+}
+function filterMessages(term){renderMsgList(conversations.filter(c=>c.user.toLowerCase().includes(term.toLowerCase())))}
+function openNewMessageModal(){
+  const sc=document.getElementById('sheetContent');sc.innerHTML='<p style="font-size:13px;color:var(--muted);margin-bottom:14px">Choose someone to message:</p>';
+  conversations.forEach(conv=>{
+    const row=document.createElement('div');row.className='msg-row';row.style.cssText='padding:10px 0;border-bottom:1px solid var(--border)';
+    row.innerHTML=`<div class="msg-ava"><img src="${conv.avatar}" alt="" style="width:40px;height:40px;border-radius:50%;object-fit:cover"></div><div style="flex:1"><div class="msg-name">@${conv.user}</div></div>`;
+    row.onclick=()=>{closeModal('sheetModal');openChat(conv.id)};
+    sc.appendChild(row);
+  });
+  document.getElementById('sheetTitle').textContent='New Message';openModal('sheetModal');
+}
+function openRequestsModal(){
+  const sc=document.getElementById('sheetContent');
+  sc.innerHTML=`<div style="background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.2);border-radius:12px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:rgba(255,200,150,1);line-height:1.6">⚠️ <strong>Safety:</strong> Only accept messages from people you know. Report suspicious requests.</div>`;
+  if(!messageRequests.length){sc.innerHTML+='<p style="text-align:center;color:var(--muted);padding:20px 0">No pending requests 🎉</p>'}
+  messageRequests.forEach(req=>{
+    const div=document.createElement('div');div.className='req-item';
+    div.innerHTML=`<img src="${req.avatar}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0" alt=""><div style="flex:1"><div style="font-weight:600;font-size:14px;margin-bottom:3px">@${req.user}</div><div style="font-size:13px;color:var(--muted);margin-bottom:8px">${esc(req.text)}</div><div class="req-actions"><button class="req-btn accept" onclick="acceptRequest(${req.id})">Accept</button><button class="req-btn decline" onclick="declineRequest(${req.id})">Decline</button><button class="req-btn report" onclick="reportRequest(${req.id},'${req.user}')">🚩 Report</button></div></div>`;
+    sc.appendChild(div);
+  });
+  document.getElementById('sheetTitle').textContent='Message Requests';openModal('sheetModal');
+}
+function acceptRequest(id){const req=messageRequests.find(r=>r.id===id);if(!req)return;conversations.push({id:Date.now(),user:req.user,avatar:req.avatar,online:false,unread:1,messages:[{mine:false,text:req.text,time:'Now'}]});messageRequests=messageRequests.filter(r=>r.id!==id);closeModal('sheetModal');buildMessages();showToast(`@${req.user} added to messages ✅`);updateReqBadge()}
+function declineRequest(id){const req=messageRequests.find(r=>r.id===id);messageRequests=messageRequests.filter(r=>r.id!==id);closeModal('sheetModal');buildMessages();if(req)showToast(`Request from @${req.user} declined`);updateReqBadge()}
+function reportRequest(id,user){declineRequest(id);openReport(user)}
+function updateReqBadge(){document.getElementById('reqSubText').textContent=messageRequests.length>0?`${messageRequests.length} waiting`:'No pending requests'}
+
+// ═══════════════════════════════════════════════
+//  CHAT
+// ═══════════════════════════════════════════════
+function openChat(convId){
+  const conv=conversations.find(c=>c.id===convId);if(!conv)return;
+  activeChatId=convId;conv.unread=0;
+  buildMessages();
+  document.getElementById('chatAva').src=conv.avatar;
+  document.getElementById('chatName').textContent='@'+conv.user;
+  document.getElementById('chatStatus').textContent=conv.online?'● Online':'Last seen recently';
+  document.getElementById('chatEmpty').style.display='none';
+  const ca=document.getElementById('chatArea');ca.style.display='flex';ca.style.flexDirection='column';ca.style.height='100%';
+  renderChatMessages(conv);
+  // highlight in list
+  document.querySelectorAll('.msg-row').forEach(r=>r.classList.remove('active'));
+  const row=document.getElementById('msgRow-'+convId);if(row)row.classList.add('active');
+}
+function openChatWith(username,avatar){
+  const existing=conversations.find(c=>c.user===username);
+  if(existing){switchTab('messages');setTimeout(()=>openChat(existing.id),50);return}
+  const newConv={id:Date.now(),user:username,avatar:avatar||'https://i.pravatar.cc/48?img=1',online:false,unread:0,messages:[]};
+  conversations.unshift(newConv);buildMessages();switchTab('messages');setTimeout(()=>openChat(newConv.id),50);
+}
+function renderChatMessages(conv){
+  const cm=document.getElementById('chatMessages');
+  cm.innerHTML=`<div class="chat-warning">⚠️ Never share passwords, personal info, or financial details. Report suspicious messages immediately.</div>`;
+  conv.messages.forEach(msg=>{
+    const wrap=document.createElement('div');wrap.className='msg-bubble-wrap'+(msg.mine?' mine':'');
+    wrap.innerHTML=`${!msg.mine?`<img class="bubble-ava" src="${conv.avatar}" alt="">`:''}
+      <div class="bubble ${msg.mine?'mine':'theirs'}">${esc(msg.text)}</div><span class="bubble-time">${msg.time}</span>`;
+    cm.appendChild(wrap);
+  });
+  cm.scrollTop=cm.scrollHeight;
+}
+function sendMessage(){
+  const input=document.getElementById('chatInput');
+  const text=input.value.trim();if(!text||!activeChatId)return;
+  const conv=conversations.find(c=>c.id===activeChatId);
+  const now=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  conv.messages.push({mine:true,text,time:now});input.value='';
+  renderChatMessages(conv);buildMessages();
+  if(Math.random()>0.4){
+    setTimeout(()=>{
+      const replies=["😄","Nice!","Sounds great!","Tell me more!","Haha love it 🔥","That's awesome!","For real?? 😲","👍","Agreed!","So cool!"];
+      conv.messages.push({mine:false,text:replies[Math.floor(Math.random()*replies.length)],time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})});
+      renderChatMessages(conv);buildMessages();
+    },1200+Math.random()*800);
+  }
+}
+function showChatMenu(){
+  if(!activeChatId)return;
+  const conv=conversations.find(c=>c.id===activeChatId);
+  const sc=document.getElementById('sheetContent');
+  sc.innerHTML=`<button class="action-sheet-btn ghost" onclick="closeModal('sheetModal');showToast('Muted @${conv.user}')">🔇 Mute Conversation</button><button class="action-sheet-btn ghost" onclick="closeModal('sheetModal');openReport('${conv.user}')">🚩 Report @${conv.user}</button><button class="action-sheet-btn danger" onclick="closeModal('sheetModal');openBlockModal('${conv.user}')">🚫 Block @${conv.user}</button><button class="action-sheet-btn ghost" onclick="closeModal('sheetModal')">Cancel</button>`;
+  document.getElementById('sheetTitle').textContent='Chat Options';openModal('sheetModal');
+}
+
+// ═══════════════════════════════════════════════
+//  NOTIFICATIONS
+// ═══════════════════════════════════════════════
+function buildNotifications(){
+  const nl=document.getElementById('notifList');nl.innerHTML='';
+  const icons={like:'❤️',comment:'💬',follow:'👤'};
+  notifications.forEach(n=>{
+    const div=document.createElement('div');div.className='notif-item'+(n.unread?' unread':'');
+    div.innerHTML=`<div class="notif-ava-wrap"><img class="notif-ava" src="${n.avatar}" alt=""><span class="notif-icon-badge">${icons[n.type]||'🔔'}</span></div><div class="notif-text"><strong>@${n.user}</strong> ${n.text}<div class="notif-time">${n.time}</div></div>${n.postImg?`<img class="notif-thumb" src="${n.postImg}" alt="">`:''}`;
+    if(n.postId)div.onclick=()=>openLb(n.postId);
+    nl.appendChild(div);
+  });
+  if(!notifications.length)nl.innerHTML='<div class="empty-state"><div class="big">🔔</div><p>No notifications yet</p></div>';
+}
+function markNotifsRead(){
+  notifications.forEach(n=>n.unread=false);
+  document.getElementById('notifSidebarBadge').classList.add('hidden');
+}
+function updateNotifBadge(){
+  const count=notifications.filter(n=>n.unread).length;
+  const b=document.getElementById('notifSidebarBadge');
+  if(count>0){b.classList.remove('hidden');b.textContent=count}else b.classList.add('hidden');
+}
+function updateMsgBadge(){
+  const count=conversations.reduce((s,c)=>s+c.unread,0);
+  const sb=document.getElementById('msgSidebarBadge');
+  const mb=document.getElementById('mobMsgBadge');
+  if(count>0){sb.classList.remove('hidden');sb.textContent=count;mb.classList.remove('hidden')}
+  else{sb.classList.add('hidden');mb.classList.add('hidden')}
+}
+
+// ═══════════════════════════════════════════════
+//  PROFILE
+// ═══════════════════════════════════════════════
+function renderProfileGrid(){
+  const myPosts=posts.filter(p=>p.user==='you');
+  document.getElementById('profilePostCount').textContent=myPosts.length;
+  const tags=[...new Set(myPosts.flatMap(p=>p.tags))];
+  document.getElementById('profileTags').innerHTML=tags.map(t=>`<span class="ptag" style="background:${TAG_COLORS[t]}cc">#${t}</span>`).join('');
+  const grid=document.getElementById('profileGrid');const empty=document.getElementById('profileEmpty');
+  grid.innerHTML='';
+  if(!myPosts.length){empty.classList.remove('hidden');return}
+  empty.classList.add('hidden');
+  myPosts.forEach(post=>{
+    const cell=document.createElement('div');cell.className='grid-cell';
+    const dot=post.tags[0]?TAG_COLORS[post.tags[0]]:'#FF6B6B';
+    cell.innerHTML=`<img src="${post.image}" alt="" loading="lazy"><div class="grid-overlay"><span class="grid-stat">❤️ ${fmt(post.likes)}</span><span class="grid-stat">💬 ${post.comments.length}</span></div><div class="grid-dot" style="background:${dot}"></div>`;
+    cell.onclick=()=>openLb(post.id);grid.appendChild(cell);
+  });
+}
+function showFollowers(){
+  const sc=document.getElementById('sheetContent');sc.innerHTML='<p style="font-size:13px;color:var(--muted);margin-bottom:14px">People following you</p>';
+  [{img:22,user:"wave_rider"},{img:5,user:"brush.strokes"},{img:9,user:"the_kitchen_lab"},{img:12,user:"pedal.life"},{img:17,user:"grove_keeper"}].forEach(f=>{
+    const d=document.createElement('div');d.className='msg-row';d.style.cssText='padding:10px 0;border-bottom:1px solid var(--border)';
+    d.innerHTML=`<div class="msg-ava"><img src="https://i.pravatar.cc/48?img=${f.img}" alt="" style="width:40px;height:40px;border-radius:50%;object-fit:cover"></div><div style="flex:1"><div class="msg-name">@${f.user}</div></div><button onclick="this.textContent='Following ✓';this.style.background='rgba(255,255,255,0.07)';this.style.color='var(--muted)';showToast('Following @${f.user}')" style="padding:6px 16px;border-radius:20px;background:linear-gradient(135deg,#FF6B6B,#FF8C42);border:none;color:#fff;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer">Follow</button>`;
+    sc.appendChild(d);
+  });
+  document.getElementById('sheetTitle').textContent='1,200 Followers';openModal('sheetModal');
+}
+function showFollowing(){
+  const sc=document.getElementById('sheetContent');sc.innerHTML='<p style="font-size:13px;color:var(--muted);margin-bottom:14px">People you follow</p>';
+  [{img:28,user:"melody.maker"},{img:33,user:"yoga.with.sam"},{img:41,user:"code_poet"},{img:44,user:"trailblazer_k"}].forEach(f=>{
+    const d=document.createElement('div');d.className='msg-row';d.style.cssText='padding:10px 0;border-bottom:1px solid var(--border)';
+    d.innerHTML=`<div class="msg-ava"><img src="https://i.pravatar.cc/48?img=${f.img}" alt="" style="width:40px;height:40px;border-radius:50%;object-fit:cover"></div><div style="flex:1"><div class="msg-name">@${f.user}</div></div><button onclick="this.textContent='Follow';this.style.background='linear-gradient(135deg,#FF6B6B,#FF8C42)';this.style.color='#fff';showToast('Unfollowed @${f.user}')" style="padding:6px 16px;border-radius:20px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:var(--muted);font-family:inherit;font-size:12px;cursor:pointer">Following ✓</button>`;
+    sc.appendChild(d);
+  });
+  document.getElementById('sheetTitle').textContent='348 Following';openModal('sheetModal');
+}
+function shareProfile(){
+  if(navigator.share)navigator.share({title:'@you on HobbySnap',url:window.location.href}).catch(()=>{});
+  else navigator.clipboard.writeText(window.location.href).then(()=>showToast('Profile link copied! 🔗'));
+}
+function openEditProfile(){
+  const tg=document.getElementById('editTagGrid');tg.innerHTML='';
+  HOBBIES.forEach(h=>{
+    const c=TAG_COLORS[h];const sel=myHobbies.includes(h);
+    const btn=document.createElement('button');btn.className='tpick';btn.textContent=h;
+    btn.style.cssText=sel?`background:${c};border:1px solid ${c};color:#fff`:`background:${c}18;border:1px solid ${c}55;color:${c}`;
+    btn.onclick=()=>{myHobbies.includes(h)?myHobbies=myHobbies.filter(t=>t!==h):myHobbies.push(h);openEditProfile()};
+    tg.appendChild(btn);
+  });
+  openModal('editProfileModal');
+}
+function saveProfile(){
+  const name=document.getElementById('editName').value.trim()||'you';
+  const bio=document.getElementById('editBio').value.trim();
+  document.querySelector('.profile-name').textContent='@'+name;
+  document.querySelector('.profile-bio').textContent=bio;
+  document.querySelector('.sidebar-user-name').textContent='@'+name;
+  closeModal('editProfileModal');renderProfileGrid();showToast('Profile saved! ✅');
+}
+
+// ═══════════════════════════════════════════════
+//  SETTINGS
+// ═══════════════════════════════════════════════
+function toggleSetting(key){
+  settings[key]=!settings[key];
+  const el=document.getElementById('toggle-'+key);if(el)el.classList.toggle('on',settings[key]);
+  showToast((settings[key]?'Enabled':'Disabled')+': '+key.replace(/([A-Z])/g,' $1').trim().toLowerCase());
+}
+function confirmLogout(){
+  const sc=document.getElementById('sheetContent');
+  sc.innerHTML=`<p style="font-size:14px;margin-bottom:20px;color:rgba(255,255,255,0.7)">Are you sure you want to log out?</p><button class="action-sheet-btn danger" onclick="closeModal('sheetModal');showToast('Logged out 👋')">Log Out</button><button class="action-sheet-btn ghost" onclick="closeModal('sheetModal')">Cancel</button>`;
+  document.getElementById('sheetTitle').textContent='Log Out';openModal('sheetModal');
+}
+function confirmDeleteAccount(){
+  const sc=document.getElementById('sheetContent');
+  sc.innerHTML=`<p style="font-size:14px;margin-bottom:10px;color:rgba(255,255,255,0.8)">This permanently deletes your account and all posts. <strong>This cannot be undone.</strong></p><p style="font-size:13px;color:var(--muted);margin-bottom:20px">If you're experiencing harassment, consider blocking the user instead.</p><button class="action-sheet-btn danger" onclick="closeModal('sheetModal');showToast('Account deletion requested 🗑️')">Delete My Account</button><button class="action-sheet-btn ghost" onclick="closeModal('sheetModal')">Cancel</button>`;
+  document.getElementById('sheetTitle').textContent='Delete Account';openModal('sheetModal');
+}
+
+// ═══════════════════════════════════════════════
+//  UPLOAD
+// ═══════════════════════════════════════════════
+function buildTagGrid(){
+  const tg=document.getElementById('tagGrid');tg.innerHTML='';
+  HOBBIES.forEach(h=>{
+    const c=TAG_COLORS[h];const sel=newPostTags.includes(h);
+    const btn=document.createElement('button');btn.className='tpick';btn.textContent=h;
+    btn.style.cssText=sel?`background:${c};border:1px solid ${c};color:#fff`:`background:${c}18;border:1px solid ${c}55;color:${c}`;
+    btn.onclick=()=>{newPostTags.includes(h)?newPostTags=newPostTags.filter(t=>t!==h):newPostTags.push(h);buildTagGrid()};
+    tg.appendChild(btn);
+  });
+}
+function openUpload(){openModal('uploadModal')}
+function resetUpload(){newPostTags=[];newPostPreview=null;const pi=document.getElementById('previewImg');pi.style.display='none';pi.src='';document.getElementById('pickerHint').style.display='';document.getElementById('captionInput').value='';document.getElementById('btnShare').disabled=true;buildTagGrid()}
+document.getElementById('uploadModal').addEventListener('click',e=>{if(e.target===document.getElementById('uploadModal')){closeModal('uploadModal');resetUpload()}});
+document.getElementById('imgPicker').onclick=()=>document.getElementById('fileInput').click();
+document.getElementById('fileInput').addEventListener('change',function(){
+  const file=this.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{newPostPreview=reader.result;const img=document.getElementById('previewImg');img.src=newPostPreview;img.style.display='block';document.getElementById('pickerHint').style.display='none';document.getElementById('btnShare').disabled=false};
+  reader.readAsDataURL(file);
+});
+document.getElementById('btnShare').onclick=()=>{
+  if(!newPostPreview)return;
+  posts.unshift({id:Date.now(),user:'you',avatar:'https://i.pravatar.cc/48?img=20',image:newPostPreview,caption:document.getElementById('captionInput').value||'New post!',tags:[...newPostTags],likes:0,comments:[],time:'Just now',liked:false,saved:false});
+  closeModal('uploadModal');resetUpload();renderGrid();renderProfileGrid();switchTab('home');showToast('Post shared! 🎉');
+};
+
+// ═══════════════════════════════════════════════
+//  SEARCH
+// ═══════════════════════════════════════════════
+document.getElementById('searchInput').addEventListener('input',function(){searchTerm=this.value;renderGrid()});
+
+// ═══════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════
+buildTagGrid();
+buildChips();
+renderGrid();
+buildExplore();
+buildHobbyCards();
+buildMessages();
+buildNotifications();
+buildRightSidebar();
+updateNotifBadge();
+updateMsgBadge();
+updateReqBadge();
+updateBlockedCount();
+// hide search on non-home tabs initially
+switchTab('home');
+</script>
+</body>
+</html>
