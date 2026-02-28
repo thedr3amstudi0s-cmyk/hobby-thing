@@ -1403,8 +1403,10 @@ document.getElementById('btnShare').onclick=()=>{
 // ═══════════════════════════════════════════
 //  SEARCH
 // ═══════════════════════════════════════════
-document.getElementById('searchInput').addEventListener('input',function(){searchTerm=this.value;renderGrid()});
-  onAuthStateChanged(firebaseAuth, user => {
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js";
+
+const auth = getAuth();
+onAuthStateChanged(auth, user => {
   if (user) {
     const autoUser = {
       uid: user.uid,
