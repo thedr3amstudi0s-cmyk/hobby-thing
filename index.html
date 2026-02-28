@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HobbySnap</title>
+<title>hobbifinder</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -244,7 +244,7 @@ textarea.cap:focus{border-color:rgba(255,107,107,0.45)}
 <div id="authWall">
   <div class="auth-split">
     <div class="auth-brand">
-      <div class="auth-brand-logo">HobbySnap</div>
+      <div class="auth-brand-logo">hobbifinder</div>
       <div class="auth-brand-tag">Share your passions.<br>Connect with your people.</div>
       <div class="auth-preview">
         <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200&q=70" alt="">
@@ -285,7 +285,7 @@ textarea.cap:focus{border-color:rgba(255,107,107,0.45)}
 <div id="appShell">
 <div id="layout">
   <aside id="sidebar">
-    <div class="sidebar-logo">HobbySnap</div>
+    <div class="sidebar-logo">hobbifinder</div>
     <button class="nav-item active" id="nav-home"><span class="ni-icon">🏠</span><span>Home</span></button>
     <button class="nav-item" id="nav-explore"><span class="ni-icon">🔍</span><span>Explore</span></button>
     <button class="nav-item" id="nav-hobbies"><span class="ni-icon">🎯</span><span>Hobbies</span></button>
@@ -340,7 +340,7 @@ textarea.cap:focus{border-color:rgba(255,107,107,0.45)}
         </div>
         <div class="profile-name" id="profileName">@you</div>
         <div class="profile-handle" id="profileHandle">Hobby Enthusiast</div>
-        <div class="profile-bio" id="profileBio">Welcome to HobbySnap!</div>
+        <div class="profile-bio" id="profileBio">Welcome to hobbifinder!</div>
         <div class="profile-stats-row">
           <div class="pstat"><span class="pnum" id="profilePostCount">0</span><span class="plbl">Posts</span></div>
         </div>
@@ -370,7 +370,7 @@ textarea.cap:focus{border-color:rgba(255,107,107,0.45)}
           <button class="danger-btn" id="logoutBtn">Log Out</button>
           <button class="danger-btn" id="deleteAccBtn">Delete Account</button>
         </div>
-        <div style="font-size:11px;color:rgba(255,255,255,.15);line-height:1.7">HobbySnap · CSAM reported to NCMEC immediately.</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.15);line-height:1.7">hobbifinder · CSAM reported to NCMEC immediately.</div>
       </div>
     </div>
   </main>
@@ -580,7 +580,7 @@ function switchAuthTab(tab) {
   $('loginForm').style.display   = tab === 'login'  ? 'block' : 'none';
   $('signupForm').style.display  = tab === 'signup' ? 'block' : 'none';
   $('authTitle').textContent     = tab === 'login'  ? 'Welcome back'    : 'Create account';
-  $('authSub').textContent       = tab === 'login'  ? 'Sign in to your account' : 'Join HobbySnap';
+  $('authSub').textContent       = tab === 'login'  ? 'Sign in to your account' : 'Join hobbifinder';
   $('authError').style.display   = 'none';
   if (tab === 'signup') buildSignupHobbyPicker();
 }
@@ -636,7 +636,7 @@ $('signupBtn').onclick = async () => {
       hobbies: signupHobbies.slice(0,5), avatar,
       createdAt: serverTimestamp()
     });
-    toast(`Welcome to HobbySnap, ${name}! 🎉`);
+    toast(`Welcome to hobbifinder, ${name}! 🎉`);
   } catch(e) {
     const m = {'auth/email-already-in-use':'An account with this email already exists.','auth/invalid-email':'Invalid email.','auth/weak-password':'Password must be at least 6 characters.'};
     showAuthError(m[e.code] || ('Error: ' + e.message));
