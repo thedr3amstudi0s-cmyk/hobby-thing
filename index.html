@@ -690,7 +690,38 @@ textarea.cap:focus,input.finput:focus{border-color:rgba(255,107,107,.45)}
 
 <div id="toast"></div>
 
+<!-- Firebase SDK -->
+<script type="module">
+  // 1. Import Firebase
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js";
+  import { 
+    getAuth, 
+    createUserWithEmailAndPassword, 
+    signInWithEmailAndPassword, 
+    signOut,
+    onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js";
+
+  // 2. Your Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyC_7Urz9nNpFBOhMXQSRC-GQi7_YMVQIzY",
+    authDomain: "hobbifinder-d9240.firebaseapp.com",
+    projectId: "hobbifinder-d9240",
+    storageBucket: "hobbifinder-d9240.firebasestorage.app",
+    messagingSenderId: "360754218729",
+    appId: "1:360754218729:web:d9c867e404fc0735cf9278"
+  };
+
+  // 3. Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  // Make auth available globally (optional)
+  window.firebaseAuth = auth;
+</script>
+  
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+
 // ═══════════════════════════════════════════
 //  CONSTANTS
 // ═══════════════════════════════════════════
@@ -699,6 +730,8 @@ const HOBBY_ICONS={Photography:"📷",Painting:"🎨",Cooking:"🍳",Gaming:"�
 const TAG_COLORS={Photography:"#FF6B6B",Painting:"#4ECDC4",Cooking:"#FFE66D",Gaming:"#A78BFA",Hiking:"#6EE7B7",Gardening:"#86EFAC",Music:"#FCA5A5",Reading:"#93C5FD",Fitness:"#FB923C",Travel:"#67E8F9",Knitting:"#F9A8D4",Cycling:"#A3E635",Surfing:"#38BDF8",Drawing:"#FBBF24",Yoga:"#C4B5FD",DIY:"#D97706",Film:"#9CA3AF",Dance:"#EC4899",Pottery:"#B45309",Coding:"#10B981"};
 const SEED_AVATARS=["https://i.pravatar.cc/48?img=1","https://i.pravatar.cc/48?img=5","https://i.pravatar.cc/48?img=9","https://i.pravatar.cc/48?img=12","https://i.pravatar.cc/48?img=17","https://i.pravatar.cc/48?img=22","https://i.pravatar.cc/48?img=28","https://i.pravatar.cc/48?img=33"];
 const REPORT_REASONS=[{icon:"🔞",label:"Nudity / Sexual Content",sub:"Explicit or suggestive material"},{icon:"👶",label:"Child Safety",sub:"Content involving minors — reported to NCMEC immediately"},{icon:"💰",label:"Spam or Scam",sub:"Fake giveaways, phishing, misleading links"},{icon:"😡",label:"Hate Speech / Harassment",sub:"Bullying, threats, discrimination"},{icon:"⚠️",label:"Violence",sub:"Content that depicts or promotes harm"},{icon:"©️",label:"Copyright Violation",sub:"Unauthorized use of someone's content"},{icon:"🔫",label:"Illegal Activity",sub:"Drug sales, weapons, other illegal content"},{icon:"🆘",label:"Self-Harm",sub:"Content promoting or glorifying self-harm"}];
+
+
 
 // ═══════════════════════════════════════════
 //  STORAGE HELPERS  (localStorage for persistence)
@@ -784,31 +817,63 @@ function buildSignupHobbyPicker(){
   });
 }
 
-function doLogin(){
-  const username=document.getElementById('loginUser').value.trim().toLowerCase();
-  const password=document.getElementById('loginPass').value;
-  if(!username||!password){showAuthError('Please fill in all fields.');return}
-  const users=lsGet('hs_users',{});
-  const u=users[username];
-  if(!u){showAuthError('Username not found. Did you mean to sign up?');return}
-  if(u.password!==password){showAuthError('Incorrect password. Please try again.');return}
-  loginAs(u);
+async function doLogin() {
+  const email = document.getElementById('loginUser').value.trim();
+  const password = document.getElementById('loginPass').value;
+
+  if (!email || !password) {
+    showAuthError('Please fill in all fields.');
+    return;
+  }
+
+  try {
+    const userCredential = await signInWithEmailAndPassword(firebaseAuth, email, password);
+    const user = userCredential.user;
+
+    const loggedInUser = {
+      uid: user.uid,
+      email: user.email,
+      name: user.displayName || email.split('@')[0],
+      bio: `Hi! I'm ${user.displayName || email.split('@')[0]} 👋`,
+      hobbies: [],
+      avatar: `https://i.pravatar.cc/80?img=${Math.floor(Math.random() * 40)+1}`
+    };
+
+    loginAs(loggedInUser); // your existing function
+  } catch (err) {
+    showAuthError(err.message);
+  }
 }
 
-function doSignup(){
-  const name=document.getElementById('suName').value.trim();
-  const username=document.getElementById('suUser').value.trim().toLowerCase().replace(/\s+/g,'_');
-  const password=document.getElementById('suPass').value;
-  if(!name||!username||!password){showAuthError('Please fill in all fields.');return}
-  if(username.length<3){showAuthError('Username must be at least 3 characters.');return}
-  if(password.length<6){showAuthError('Password must be at least 6 characters.');return}
-  if(!/^[a-z0-9_.]+$/.test(username)){showAuthError('Username can only contain letters, numbers, . and _');return}
-  const users=lsGet('hs_users',{});
-  if(users[username]){showAuthError('Username already taken. Try another!');return}
-  const avatarIdx=Math.floor(Math.random()*40)+1;
-  const newUser={username,name,bio:`Hi! I'm ${name} 👋`,hobbies:signupHobbies.slice(0,5),avatar:`https://i.pravatar.cc/80?img=${avatarIdx}`,password,followers:[],following:[]};
-  users[username]=newUser;lsSet('hs_users',users);
-  loginAs(newUser);showToast(`Welcome to HobbySnap, ${name}! 🎉`);
+async function doSignup() {
+  const email = document.getElementById('suUser').value.trim();
+  const password = document.getElementById('suPass').value;
+  const name = document.getElementById('suName').value.trim();
+
+  if (!email || !password || !name) {
+    showAuthError('Please fill in all fields.');
+    return;
+  }
+
+  try {
+    const userCredential = await createUserWithEmailAndPassword(firebaseAuth, email, password);
+    const user = userCredential.user;
+
+    const avatarIdx = Math.floor(Math.random() * 40) + 1;
+    const newUser = {
+      uid: user.uid,
+      email,
+      name,
+      bio: `Hi! I'm ${name} 👋`,
+      hobbies: signupHobbies.slice(0,5),
+      avatar: `https://i.pravatar.cc/80?img=${avatarIdx}`
+    };
+
+    loginAs(newUser); // your existing function to set currentUser & show app
+    showToast(`Welcome to HobbySnap, ${name}! 🎉`);
+  } catch (err) {
+    showAuthError(err.message);
+  }
 }
 
 function loginAs(user){
@@ -820,21 +885,15 @@ function loginAs(user){
   initApp();
 }
 
-function doLogout(){
-  lsSet('hs_session',null);currentUser=null;allPosts=[];
-  document.getElementById('appShell').style.display='none';
-  document.getElementById('authWall').style.display='flex';
-  showAuthTab('login');
-  document.getElementById('loginUser').value='';
-  document.getElementById('loginPass').value='';
-  showToast('Logged out 👋');
-}
-
-function tryAutoLogin(){
-  seedIfNeeded();
-  const savedUser=lsGet('hs_session');
-  if(savedUser){const users=lsGet('hs_users',{});const u=users[savedUser];if(u){document.getElementById('ageGate').style.display='none';loginAs(u);return}}
-  // show age gate
+function doLogout() {
+  signOut(firebaseAuth).then(() => {
+    currentUser = null;
+    allPosts = [];
+    document.getElementById('appShell').style.display = 'none';
+    document.getElementById('authWall').style.display = 'flex';
+    showAuthTab('login');
+    showToast('Logged out 👋');
+  }).catch(err => showToast('Error logging out'));
 }
 
 // ═══════════════════════════════════════════
@@ -1350,6 +1409,19 @@ document.getElementById('searchInput').addEventListener('input',function(){searc
 //  INIT
 // ═══════════════════════════════════════════
 tryAutoLogin();
+  onAuthStateChanged(firebaseAuth, user => {
+  if (user) {
+    const autoUser = {
+      uid: user.uid,
+      email: user.email,
+      name: user.displayName || user.email.split('@')[0],
+      bio: `Hi! I'm ${user.displayName || user.email.split('@')[0]} 👋`,
+      hobbies: [],
+      avatar: `https://i.pravatar.cc/80?img=${Math.floor(Math.random()*40)+1}`
+    };
+    loginAs(autoUser);
+  }
+});
 </script>
 </body>
 </html>
